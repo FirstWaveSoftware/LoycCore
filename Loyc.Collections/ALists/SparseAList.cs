@@ -13,20 +13,19 @@ namespace Loyc.Collections
 	/// An <a href="http://core.loyc.net/collections/alists-part3.html">article</a>
 	/// about this class is available.
 	/// <para/>
-	/// The sparse A-List is implemented similarly to a normal A-List; the main 
+	/// The sparse A-List is implemented similarly to a normal A-List; the main
 	/// difference is that leaf nodes have a list of (int, T) pairs rather than
 	/// a list of T values. The integers represent the relative index of each T
-	/// value, as an offset from the beginning of the node. This allows an 
+	/// value, as an offset from the beginning of the node. This allows an
 	/// arbitrary amount of empty space to exist between each T value in the
 	/// list, making it sparse.
 	/// <para/>
-	/// <c>SparseAList</c> is a precise sparse list, meaning that you can rely on 
-	/// it to keep track of which indexes are "set" and which are "empty" (the 
+	/// <c>SparseAList</c> is a precise sparse list, meaning that you can rely on
+	/// it to keep track of which indexes are "set" and which are "empty" (the
 	/// <see cref="IsSet"/> method tells you which).
 	/// <para/>
 	/// TODO: Add support for A-List tree observers (IAListTreeObserver(K,T))
 	/// </remarks>
-	[Serializable]
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	public class SparseAList<T> : AListBase<T>, ISparseListEx<T>, IListEx<T>, IListRangeMethods<T>, ICloneable<SparseAList<T>>
 	{
@@ -40,7 +39,7 @@ namespace Loyc.Collections
 		public SparseAList(int maxLeafSize, int maxInnerSize) : base(maxLeafSize, maxInnerSize) { }
 		public SparseAList(SparseAList<T> items, bool keepListChangingHandlers) : base(items, keepListChangingHandlers) { }
 		protected SparseAList(AListBase<int, T> original, AListNode<int, T> section) : base(original, section) { }
-		
+
 		#endregion
 
 		#region General supporting protected methods
@@ -49,7 +48,7 @@ namespace Loyc.Collections
 		{
 			return new SparseAListLeaf<T>(_maxLeafSize);
 		}
-		
+
 		#endregion
 
 		void IAddRange<T>.AddRange(IReadOnlyCollection<T> source) { AddRange(source); }
@@ -69,9 +68,9 @@ namespace Loyc.Collections
 				if (op.Source == null)
 					op.Source = new Repeated<T>(op.WriteEmpty ? default(T) : op.Item, op.SourceCount);
 				if (op.IsInsert)
-					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, (int)index, op.SourceCount, op.Source));
+					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChanged.Add, (int)index, op.SourceCount, op.Source));
 				else
-					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, (int)index, 0, op.Source));
+					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChanged.Replace, (int)index, 0, op.Source));
 			}
 			if (_root == null || _root.IsFrozen)
 				AutoCreateOrCloneRoot();
@@ -109,7 +108,7 @@ namespace Loyc.Collections
 
 		public void InsertRange(int index, SparseAList<T> source) { InsertRange(index, source, false); }
 		public void InsertRange(int index, SparseAList<T> source, bool move) { base.InsertRange(index, source, move); }
-		
+
 		void IListRangeMethods<T>.InsertRange(int index, IReadOnlyCollection<T> source) { InsertRange(index, source); }
 		public sealed override void InsertRange(int index, IEnumerable<T> list)
 		{
@@ -168,10 +167,10 @@ namespace Loyc.Collections
 		{
 			if ((uint)count > _count - (uint)start)
 				throw new ArgumentOutOfRangeException(count < 0 ? "count" : "start+count");
-			
+
 			var newList = new SparseAList<T>(this, CopySectionHelper(start, count));
-			// bug fix: we must RemoveRange after creating the new list, because 
-			// the section is expected to have the same height as the original tree 
+			// bug fix: we must RemoveRange after creating the new list, because
+			// the section is expected to have the same height as the original tree
 			// during the constructor of the new list.
 			RemoveRange(start, count);
 			return newList;
@@ -197,7 +196,7 @@ namespace Loyc.Collections
 		/// <param name="other">A list of items to be added to the front of this list (at index 0).</param>
 		/// <inheritdoc cref="Append(SparseAList{T}, bool)"/>
 		public virtual void Prepend(SparseAList<T> other) { Combine(other, false, false); }
-		
+
 		/// <summary>Prepends an AList to this list in sublinear time.</summary>
 		/// <param name="other">A list of items to be added to the front of this list (at index 0).</param>
 		/// <inheritdoc cref="Append(SparseAList{T}, bool)"/>
@@ -233,7 +232,7 @@ namespace Loyc.Collections
 			DoSparseOperation(ref op);
 			return true;
 		}
-		
+
 		public void ClearSpace(int index, int count = 1)
 		{
 			CheckParam.IsNotNegative("count", count);
@@ -304,7 +303,7 @@ namespace Loyc.Collections
 			var comp = EqualityComparer<T>.Default;
 			bool isDefault = comp.Equals(item, default(T));
 			int prev = -1;
-			// Not well optimized: we have not written an enumerator for the sparse 
+			// Not well optimized: we have not written an enumerator for the sparse
 			// items (in a more sophisticated language than C# I would design the
 			// main enumerator to do both jobs) so we just call SparseGetNearest in
 			// a loop; SparseGetNearest is an O(log N) operation.
@@ -327,4 +326,3 @@ namespace Loyc.Collections
 		public int GetRealItemCount() { return _root == null ? 0 : (int)_root.GetRealItemCount(); }
 	}
 }
-

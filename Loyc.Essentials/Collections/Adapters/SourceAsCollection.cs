@@ -3,7 +3,7 @@
  * User: Pook
  * Date: 4/10/2011
  * Time: 9:28 AM
- * 
+ *
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
 using System;
@@ -15,8 +15,8 @@ namespace Loyc.Collections
 	public static partial class LCExt
 	{
 		/// <summary>Adapter: treats any IReadOnlyCollection{T} as a read-only ICollection{T}.</summary>
-		/// <remarks>This method is named "AsCollection" and not "ToCollection" 
-		/// because, in contrast to methods like ToArray() and ToList(), it does not 
+		/// <remarks>This method is named "AsCollection" and not "ToCollection"
+		/// because, in contrast to methods like ToArray() and ToList(), it does not
 		/// make a copy of the sequence, although it does create a new wrapper object.</remarks>
 		public static ICollection<T> AsCollection<T>(this IReadOnlyCollection<T> c)
 		{
@@ -31,7 +31,6 @@ namespace Loyc.Collections
 	/// A read-only wrapper that implements ICollection(T) and ISource(T),
 	/// returned from <see cref="LCExt.AsCollection{T}"/>
 	/// </summary>
-	[Serializable]
 	public sealed class ReadOnlyAsCollection<T> : WrapperBase<IReadOnlyCollection<T>>, ICollectionAndReadOnly<T>
 	{
 		public ReadOnlyAsCollection(IReadOnlyCollection<T> obj) : base(obj) { }

@@ -6,7 +6,7 @@ using System.Linq;
 namespace Loyc.Collections.Impl
 {
 	/// <summary>Helps you implement read-only collections by providing
-	/// default implementations for most methods of <see cref="ICollection{T}"/> 
+	/// default implementations for most methods of <see cref="ICollection{T}"/>
 	/// and <see cref="IReadOnlyCollection{T}"/>.</summary>
 	/// <remarks>
 	/// You only need to implement two methods yourself:
@@ -15,7 +15,6 @@ namespace Loyc.Collections.Impl
 	///     public abstract IEnumerator&lt;T> GetEnumerator();
 	/// </code>
 	/// </remarks>
-	[Serializable]
 	public abstract class ReadOnlyCollectionBase<T> : ICollectionAndReadOnly<T>
 	{
 		#region ISource<T> Members

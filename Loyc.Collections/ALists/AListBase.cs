@@ -18,129 +18,128 @@
 	/// You can read <a href="http://core.loyc.net/collections/">articles</a> about
 	/// the AList family of data structures online.
 	/// <para/>
-	/// <see cref="AList{T}"/> and <see cref="BList{T}"/> are excellent data 
-	/// structures to choose if you aren't sure what your requirements are. The 
-	/// main difference between them is that BList is sorted and AList is not. 
-	/// <see cref="DList{T}"/>, meanwhile, is a simpler data structure with a 
+	/// <see cref="AList{T}"/> and <see cref="BList{T}"/> are excellent data
+	/// structures to choose if you aren't sure what your requirements are. The
+	/// main difference between them is that BList is sorted and AList is not.
+	/// <see cref="DList{T}"/>, meanwhile, is a simpler data structure with a
 	/// faster indexer and lower memory requirements. In fact, the leaf nodes
 	/// of this class are built upon <see cref="InternalDList{T}"/>.
 	/// <para/>
 	/// Classes derived from AListBase typically have the following abilities:
 	/// <ul>
 	/// <li>Items can always be inserted or removed in O(log N) time (by convention,
-	/// N refers to the number of items in the list, although it is the 
+	/// N refers to the number of items in the list, although it is the
 	/// <see cref="Count"/> property that actually returns this number).</li>
 	/// <li>Elements can also be accessed by index in O(log N) time.</li>
-	/// <li>Scanning the list with an enumerator or foreach loop takes O(1) time 
-	/// per element (plus O(log N) to initialize the enumerator), and it is 
+	/// <li>Scanning the list with an enumerator or foreach loop takes O(1) time
+	/// per element (plus O(log N) to initialize the enumerator), and it is
 	/// possible to start enumerating somewhere in the middle of the list.</li>
 	/// <li>The list can be frozen with <see cref="Freeze"/>, making it read-only.</li>
 	/// <li>The list can be cloned in O(1) time and space, with incremental copy-
 	/// on-write semantics. Thus, changing either copy of the tree costs extra time
-	/// and space in order to duplicate parts of the tree that are changing. A 
+	/// and space in order to duplicate parts of the tree that are changing. A
 	/// frozen list can be cloned to produce a non-frozen list. In the language of
 	/// comp-sci techno-babble, A-lists are related to the family of "persistent"
-	/// data structures, although I could not find a term that describes the form 
+	/// data structures, although I could not find a term that describes the form
 	/// of persistence that A-lists support.</li>
 	/// <li>Changes can be observed through the <see cref="ListChanging"/> event.
 	/// The performance penalty for this feature is lower than for the standard
 	/// ObservableCollection{T} class.</li>
 	/// <li>Changes to the tree structure can be observed by writing a class that
-	/// implements <see cref="IAListTreeObserver{K,T}"/> and calling 
+	/// implements <see cref="IAListTreeObserver{K,T}"/> and calling
 	/// <see cref="AddObserver"/>.</li>
-	/// <li>A section of the list can be cloned in O(log N) time, although there is 
+	/// <li>A section of the list can be cloned in O(log N) time, although there is
 	/// no time savings when extracting a small section.</li>
 	/// <li>Removing a contiguous group of items takes O(log N + M) time, where M is
 	/// the number of items being removed.</li>
-	/// <li>A reversed view of the list is given by the <see cref="ReverseView"/> 
-	/// property, and the list can be enumerated backwards, also in O(1) time 
+	/// <li>A reversed view of the list is given by the <see cref="ReverseView"/>
+	/// property, and the list can be enumerated backwards, also in O(1) time
 	/// per element.</li>.
 	/// </ul>
 	/// Derived classes provide the following additional capabilities:
 	/// <ul>
-	/// <li><see cref="BList{T}"/> and <see cref="IndexedAList{T}"/> allow you to 
-	/// find items in O(log N) time. BList is a sorted B+tree, so it achieves this 
-	/// ability through a kind of binary search, while IndexedAList uses a special 
+	/// <li><see cref="BList{T}"/> and <see cref="IndexedAList{T}"/> allow you to
+	/// find items in O(log N) time. BList is a sorted B+tree, so it achieves this
+	/// ability through a kind of binary search, while IndexedAList uses a special
 	/// kind of hashtable maintained in parallel with the tree.</li>
-	/// <li><see cref="BList{T}.FindLowerBound"/>allows you to find the closest 
-	/// larger item to an item that is not in the list. For example, if a BList(of 
+	/// <li><see cref="BList{T}.FindLowerBound"/>allows you to find the closest
+	/// larger item to an item that is not in the list. For example, if a BList(of
 	/// int) contains { 1, 3, 9 }, you can search for 5 in order to find 9.</li>
-	/// <li><see cref="AList{T}"/> allows a contiguous group of items to be 
-	/// inserted in O(log N + M) time, where M is the number of items being 
+	/// <li><see cref="AList{T}"/> allows a contiguous group of items to be
+	/// inserted in O(log N + M) time, where M is the number of items being
 	/// inserted.</li>
-	/// <li><see cref="AList{T}"/> allows you to concatenate two lists in O(log N) 
+	/// <li><see cref="AList{T}"/> allows you to concatenate two lists in O(log N)
 	/// time, where N is the size of the combined list, although there is no time
 	/// savings when combining small lists.</li>
-	/// <li><see cref="AList{T}"/> has a special sorting algorithm that allows you 
+	/// <li><see cref="AList{T}"/> has a special sorting algorithm that allows you
 	/// to sort the list in slightly more than O(N log N) time. This is slower than
-	/// sorting an array or <see cref="List{T}"/>, but faster than a quicksort 
-	/// applied directly to <see cref="AList{T}"/>, which would take O(N log^2 N) 
+	/// sorting an array or <see cref="List{T}"/>, but faster than a quicksort
+	/// applied directly to <see cref="AList{T}"/>, which would take O(N log^2 N)
 	/// time.</li>
 	/// </ul>
-	/// As you can see, the A-List family of data structures allows you to 
-	/// accomplish a wide variety of tasks efficiently, so the letter "A" in A-List 
+	/// As you can see, the A-List family of data structures allows you to
+	/// accomplish a wide variety of tasks efficiently, so the letter "A" in A-List
 	/// stands for All-purpose.
 	/// <para/>
-	/// A-Lists use memory efficiently because they are similar to B+trees. A-Lists 
-	/// tend to use slightly more memory than <see cref="List{T}"/> but have lower 
-	/// peak memory usage, because their size never suddenly doubles. A-Lists use 
-	/// much less memory than <see cref="HashSet{T}"/>, so they are useful for 
+	/// A-Lists use memory efficiently because they are similar to B+trees. A-Lists
+	/// tend to use slightly more memory than <see cref="List{T}"/> but have lower
+	/// peak memory usage, because their size never suddenly doubles. A-Lists use
+	/// much less memory than <see cref="HashSet{T}"/>, so they are useful for
 	/// storing large data sets in RAM.
 	/// <para/>
 	/// The efficiency of various operations is affected by the maximum sizes of the
-	/// inner nodes and leaf nodes, which can be set independently when constructing 
+	/// inner nodes and leaf nodes, which can be set independently when constructing
 	/// an <see cref="AList{T}"/> or <see cref="BList{T}"/>. Generally, larger leaf
 	/// nodes allow faster indexing but slower insertions and removals. If the list
-	/// is cloned frequently, smaller inner and leaf nodes will speed up all 
-	/// modifications (insertions, removals, and modification of individual items), 
-	/// although small node sizes suffer increased overhead (higher memory usage and 
-	/// slower indexing). The default inner node size of 16 is usually best for 
+	/// is cloned frequently, smaller inner and leaf nodes will speed up all
+	/// modifications (insertions, removals, and modification of individual items),
+	/// although small node sizes suffer increased overhead (higher memory usage and
+	/// slower indexing). The default inner node size of 16 is usually best for
 	/// performance, because the binary searches required for lookups will have good
-	/// locality-of-reference. Small size limits (less than 8) have a high overhead 
+	/// locality-of-reference. Small size limits (less than 8) have a high overhead
 	/// and are not recommended for any purpose except unit testing. The minimum
 	/// allowed maximum node size is 3.
 	/// <para/>
-	/// In general, the tree is structured so that indexing is faster than 
-	/// insertions and removals, even though these three operations have the same 
+	/// In general, the tree is structured so that indexing is faster than
+	/// insertions and removals, even though these three operations have the same
 	/// scalability, O(log N).
 	/// <para/>
-	/// In general, this family of classes is NOT multithread-safe; concurrency 
-	/// support is the only major feature that AListBase lacks. It supports 
+	/// In general, this family of classes is NOT multithread-safe; concurrency
+	/// support is the only major feature that AListBase lacks. It supports
 	/// multiple readers concurrently, as long as the collection is not modified,
-	/// so frozen instances ARE multithread-safe. However, classes derived from 
-	/// AListBase must not be accessed from other threads during any modification. 
-	/// There is a mechanism to detect illegal concurrent access and throw 
-	/// InvalidOperationException if it is detected, but this is not designed to be 
-	/// reliable; its main purpose is to help you find bugs. If concurrent 
-	/// modification is not detected, the AList will probably become corrupted and 
+	/// so frozen instances ARE multithread-safe. However, classes derived from
+	/// AListBase must not be accessed from other threads during any modification.
+	/// There is a mechanism to detect illegal concurrent access and throw
+	/// InvalidOperationException if it is detected, but this is not designed to be
+	/// reliable; its main purpose is to help you find bugs. If concurrent
+	/// modification is not detected, the AList will probably become corrupted and
 	/// produce strange exceptions, or fail an assertion (in debug builds).
 	/// <para/>
 	/// Although AListBase provides neither concurrent operations nor safety for
-	/// concurrent modification, the fast-clone feature makes it a useful parallel 
-	/// data structure. Consider, for instance, a document editor that wants to 
-	/// run a spell-check on a background thread, with an AList(of Char) object 
-	/// representing the document. The spell checker cannot access the document 
-	/// if the user might modify it concurrently; luckily, it can be cloned 
+	/// concurrent modification, the fast-clone feature makes it a useful parallel
+	/// data structure. Consider, for instance, a document editor that wants to
+	/// run a spell-check on a background thread, with an AList(of Char) object
+	/// representing the document. The spell checker cannot access the document
+	/// if the user might modify it concurrently; luckily, it can be cloned
 	/// instantly before starting the spell-checking thread. The root of the AList's
 	/// B+ tree is marked frozen, and when the user modifies the original document,
 	/// the AList will duplicate a few frozen nodes in order to modify them without
 	/// crashing the spell-check operation that is running concurrently. You will,
-	/// of course, have to deal with the fact that the spell-check results apply 
-	/// to an old version of the document, but at least the program won't crash 
+	/// of course, have to deal with the fact that the spell-check results apply
+	/// to an old version of the document, but at least the program won't crash
 	/// and the user won't be blocked from editing while the spellcheck is running.
 	/// <para/>
 	/// The disadvantage of the fast-clone approach is that the immutability of the
 	/// tree cannot be cancelled. So if the spell-check finishes after a half-second
 	/// and the user did not modify the document, the tree still remains frozen and
 	/// will still have to be copied later when the user does modify it. Still, the
-	/// copying is a pay-as-you-go cost, so the app will stay responsive and the 
-	/// entire tree will not be copied unless you make widespread changes to the 
+	/// copying is a pay-as-you-go cost, so the app will stay responsive and the
+	/// entire tree will not be copied unless you make widespread changes to the
 	/// collection (e.g. converting the document to all-uppercase.)
 	/// </remarks>
 	/// <typeparam name="K">Type of keys that are used to classify items in a tree</typeparam>
-	/// <typeparam name="T">Type of each element in the list. The derived class 
+	/// <typeparam name="T">Type of each element in the list. The derived class
 	/// must implement the <see cref="GetKey"/> method that converts T to K.</typeparam>
-	[Serializable]
 	public abstract partial class AListBase<K, T> : IListSource<T>, INotifyListChanging<T>
 	{
 		#region Data members
@@ -196,12 +195,12 @@
 				CheckParam.ThrowOutOfRange("maxInnerSize");
 		}
 
-		/// <summary>Cloning constructor. Does not duplicate the observer 
-		/// (<see cref="IAListTreeObserver{K,T}"/>), if any, because it may not be 
+		/// <summary>Cloning constructor. Does not duplicate the observer
+		/// (<see cref="IAListTreeObserver{K,T}"/>), if any, because it may not be
 		/// cloneable.</summary>
 		/// <param name="items">Original list</param>
-		/// <param name="keepListChangingHandlers">Whether to duplicate the 
-		/// delegate for ListChanging; if false, this new object will not include 
+		/// <param name="keepListChangingHandlers">Whether to duplicate the
+		/// delegate for ListChanging; if false, this new object will not include
 		/// any handlers for the ListChanging event.</param>
 		/// <remarks>This constructor leaves the new clone unfrozen.</remarks>
 		protected AListBase(AListBase<K, T> items, bool keepListChangingHandlers)
@@ -214,13 +213,13 @@
 			_maxLeafSize = items._maxLeafSize;
 			_treeHeight = items._treeHeight;
 			if (keepListChangingHandlers && items._listChanging != null)
-				_listChanging = (ListChangingHandler<T>)items._listChanging.Clone();
+				_listChanging = items._listChanging;  // delegates are immutable
 			// Leave _freezeMode at NotFrozen and _version at 0
 		}
 
 		/// <summary>
-		/// This is the constructor that CopySection(), which can be defined by 
-		/// derived classes, should call to create a sublist of a list. Used in 
+		/// This is the constructor that CopySection(), which can be defined by
+		/// derived classes, should call to create a sublist of a list. Used in
 		/// conjunction with CopySectionHelper().
 		/// </summary>
 		protected AListBase(AListBase<K, T> original, AListNode<K, T> section)
@@ -234,14 +233,14 @@
 				HandleChangedOrUndersizedRoot(section);
 			}
 		}
-		
+
 		#endregion
 
 		#region General supporting protected methods
 
 		protected abstract AListNode<K, T> NewRootLeaf();
 		protected abstract AListInnerBase<K, T> SplitRoot(AListNode<K, T> left, AListNode<K, T> right);
-		
+
 		protected virtual Enumerator NewEnumerator(uint start, uint firstIndex, uint lastIndex)
 		{
 			return new Enumerator(this, start, firstIndex, lastIndex);
@@ -359,9 +358,9 @@
 		#region DoSingleOperation (front-end to most operations in an organized tree)
 
 		/// <summary>Performs an operation on a single item in an organized tree.</summary>
-		/// <param name="op">Describes the operation to perform. The following 
+		/// <param name="op">Describes the operation to perform. The following
 		/// members must be initialized: Mode, CompareKeys, CompareToKey, Item, and
-		/// Key. Also, set <see cref="AListSingleOperation{K,T}.RequireExactMatch"/> 
+		/// Key. Also, set <see cref="AListSingleOperation{K,T}.RequireExactMatch"/>
 		/// if desired.</param>
 		/// <returns>Returns the number of items that were added or removed, which
 		/// is always 1, 0, or -1.</returns>
@@ -369,29 +368,29 @@
 		/// This method can be used to add, remove, or replace an item in an
 		/// organized tree such as a B+ tree. It also finds the index of the item
 		/// that was found, added, removed, or replaced, so it can be used to
-		/// implement IndexOf(K) for a key K. Please note that in a dictionary, 
-		/// this method cannot find an exact item (key-value pair) reliably when 
+		/// implement IndexOf(K) for a key K. Please note that in a dictionary,
+		/// this method cannot find an exact item (key-value pair) reliably when
 		/// duplicate keys exist.*
 		/// <para/>
-		/// This method could be used to find items also, but it assumes the 
+		/// This method could be used to find items also, but it assumes the
 		/// operation might modify the tree and therefore enables concurrent
 		/// access detection and will create the root node if it doesn't exist.
-		/// Therefore, you should call <see cref="OrganizedRetrieve"/> if you 
+		/// Therefore, you should call <see cref="OrganizedRetrieve"/> if you
 		/// only want to retrieve an item from the tree.
 		/// <para/>
 		/// See the documentation of <see cref="AListSingleOperation{K,T}"/> and
 		/// <see cref="AListOperation"/> for more information.
 		/// <para/>
 		/// * Actually it is possible in a B+ tree, but requires a specially-
-		///   designed derived class. Specifically, it is necessary to store 
+		///   designed derived class. Specifically, it is necessary to store
 		///   key-value pairs in inner nodes instead of just keys (so K := T),
 		///   and to implement two different sorting functions. One sort function
 		///   only compares keys, but this function can only be used for find
-		///   and remove operations. The other function compares entire key-value 
-		///   pairs in order to find an exact match (note that this requires 
-		///   ordered values); this second function must be used for all add 
+		///   and remove operations. The other function compares entire key-value
+		///   pairs in order to find an exact match (note that this requires
+		///   ordered values); this second function must be used for all add
 		///   operations, otherwise the tree may not stay sorted. In this kind
-		///   of tree, replacements are generally unsafe (unless the new key and 
+		///   of tree, replacements are generally unsafe (unless the new key and
 		///   value both compare equal to the old key and value).
 		/// </remarks>
 		internal int DoSingleOperation(ref AListSingleOperation<K, T> op)
@@ -402,7 +401,7 @@
 				_freezeMode = FrozenForConcurrency;
 				if (_root == null) {
 					if (op.Mode == AListOperation.Remove || op.Mode == AListOperation.ReplaceIfPresent)
-						return 0; // avoid creating unnecessary root 
+						return 0; // avoid creating unnecessary root
 					AutoCreateOrCloneRoot();
 				} else if (_root.IsFrozen)
 					AutoCreateOrCloneRoot();
@@ -413,7 +412,7 @@
 				op.List = this;
 
 				sizeChange = _root.DoSingleOperation(ref op, out splitLeft, out splitRight);
-				
+
 				if (splitLeft != null)
 				{
 					if (op.Mode == AListOperation.Remove) {
@@ -435,13 +434,13 @@
 
 		/// <summary>Performs a retrieve operation for a specific item.</summary>
 		/// <param name="op">Describes the item to retrieve and receives information
-		/// about the item retrieved. The following members must be initialized: 
-		/// CompareKeys, CompareToKey, and Key. Also, if desired, set 
+		/// about the item retrieved. The following members must be initialized:
+		/// CompareKeys, CompareToKey, and Key. Also, if desired, set
 		/// <see cref="AListSingleOperation{K,T}.RequireExactMatch"/>.
 		/// <para/>
 		/// When this method returns, op.Found indicates whether the requested key
-		/// was found, op.Item will contain the item with that key (if found), and 
-		/// op.BaseIndex will contain the index of the item (see 
+		/// was found, op.Item will contain the item with that key (if found), and
+		/// op.BaseIndex will contain the index of the item (see
 		/// <see cref="AListSingleOperation{K,T}.BaseIndex"/>).
 		/// </param>
 		internal void OrganizedRetrieve(ref AListSingleOperation<K, T> op)
@@ -453,10 +452,10 @@
 			if (_freezeMode == FrozenForConcurrency)
 				ThrowFrozen();
 			op.List = this;
-			AListNode<K, T> splitLeft, splitRight;			
+			AListNode<K, T> splitLeft, splitRight;
 			_root.DoSingleOperation(ref op, out splitLeft, out splitRight);
 		}
-		
+
 		#endregion
 
 		#region Remove, RemoveAt, RemoveRange
@@ -485,7 +484,7 @@
 		{
 			AutoThrow();
 			if (_listChanging != null)
-				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, (int)index, -(int)amount, null));
+				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChanged.Remove, (int)index, -(int)amount, null));
 
 			try
 			{
@@ -506,7 +505,7 @@
 				_freezeMode = NotFrozen;
 			}
 		}
-		
+
 		/// <summary>Removes all the elements that match the conditions defined by the specified predicate.</summary>
 		/// <param name="match">A lambda that defines the conditions on the elements to remove.</param>
 		/// <returns>The number of elements removed from the list.</returns>
@@ -530,12 +529,12 @@
 		#endregion
 
 		#region Other standard methods: Clear, CopyTo, Count
-		
+
 		public virtual void Clear() { ClearInternal(false); }
-		
+
 		/// <summary>Clears the tree.</summary>
-		/// <param name="forceClear">If true, the list is cleared even if 
-		/// _listChanging throws an exception. If false, _listChanging can cancel 
+		/// <param name="forceClear">If true, the list is cleared even if
+		/// _listChanging throws an exception. If false, _listChanging can cancel
 		/// the operation by throwing an exception.</param>
 		/// <remarks>If the list is frozen, it is not cleared even if forceClear=true.</remarks>
 		protected virtual void ClearInternal(bool forceClear)
@@ -543,7 +542,7 @@
 			AutoThrow();
 			if (_listChanging != null) {
 				try {
-					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, 0, -Count, null));
+					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChanged.Remove, 0, -Count, null));
 				} catch {
 					if (forceClear)
 						JustClear();
@@ -581,7 +580,7 @@
 				        .Where(index => index != -1);
 		}
 
-		/// <summary>Scans the list starting at startIndex and going upward, and 
+		/// <summary>Scans the list starting at startIndex and going upward, and
 		/// returns the index of an item that matches the first argument.</summary>
 		/// <param name="item">Item to find</param>
 		/// <param name="startIndex">Index of first element against which to compare the item.</param>
@@ -601,7 +600,7 @@
 			}
 			return -1;
 		}
-		
+
 		public void CopyTo(T[] array, int arrayIndex)
 		{
 			LCInterfaces.CopyTo(this, array, arrayIndex);
@@ -665,9 +664,9 @@
 			public readonly uint StartIndex;
 
 			/// <summary>
-			/// Index of the last item that was enumerated. If has been enumerated 
-			/// yet, this will typically be one beyond the range of indexes with 
-			/// which this enumerator was initialized, e.g. -1 when enumerating 
+			/// Index of the last item that was enumerated. If has been enumerated
+			/// yet, this will typically be one beyond the range of indexes with
+			/// which this enumerator was initialized, e.g. -1 when enumerating
 			/// the entire list from the beginning.
 			/// </summary>
 			public int CurrentIndex { get { return (int)_currentIndex; } }
@@ -676,13 +675,13 @@
 			/// Initializes an AList enumerator.
 			/// </summary>
 			/// <param name="self">AList to be enumerated.</param>
-			/// <param name="start">Value of CurrentIndex after initialization; 
-			/// should be firstIndex-1 if you want to enumerate forward, or 
+			/// <param name="start">Value of CurrentIndex after initialization;
+			/// should be firstIndex-1 if you want to enumerate forward, or
 			/// lastIndex if you want to enumerate backward.</param>
 			/// <param name="firstIndex">Minimum index to enumerate. When enumerating
 			/// backward, enumeration will stop after this index.</param>
-			/// <param name="lastIndex">Maximum index to enumerate plus one. When 
-			/// enumerating forward, enumeration will stop at this index (without 
+			/// <param name="lastIndex">Maximum index to enumerate plus one. When
+			/// enumerating forward, enumeration will stop at this index (without
 			/// yielding the value there, if any).</param>
 			/// <remarks>
 			/// The Current property is never initialized by the constructor. You
@@ -691,7 +690,7 @@
 			protected internal Enumerator(AListBase<K, T> self, uint start, uint firstIndex, uint lastIndex)
 			//public Enumerator(AListBase<K, T> self, uint start, uint subcount)
 			{
-				// The Enumerator state becomes invalid if MoveNext() enumerates past 
+				// The Enumerator state becomes invalid if MoveNext() enumerates past
 				// the end of the tree, in which case InvalidStateException is thrown.
 				// Limit the index range so that that doesn't happen.
 				start = Math.Min(start+1, self._count+1) - 1;
@@ -898,7 +897,7 @@
 						throw new InvalidOperationException();
 					if (_expectedVersion != _self._version)
 						throw new EnumerationException();
-					
+
 					LLSetCurrent(value);
 				}
 			}
@@ -915,7 +914,7 @@
 				Debug.Assert(_leaf.IsFrozen);
 				var clone = _leaf.DetachedClone();
 
-				// In the face of cloning, all enumerators except this one must 
+				// In the face of cloning, all enumerators except this one must
 				// now be considered invalid.
 				++_self._version;
 				++_expectedVersion;
@@ -944,14 +943,14 @@
 					}
 				}
 			}
-			
+
 			#endregion
 		}
 
 		#endregion
-	
+
 		#region Indexer (this[int]), TryGet
-		
+
 		public T this[int index]
 		{
 			get {
@@ -1002,7 +1001,7 @@
 		}
 
 		/// <summary>Together with the <see cref="AListBase{K,T}.AListBase(AListBase{K,T},AListNode{K,T})"/>
-		/// constructor, this method helps implement the CopySection() method in derived 
+		/// constructor, this method helps implement the CopySection() method in derived
 		/// classes, by cloning a section of the tree.</summary>
 		protected AListNode<K, T> CopySectionHelper(int start, int subcount)
 		{
@@ -1025,13 +1024,13 @@
 
 		/// <summary>Swaps two ALists.</summary>
 		/// <remarks>
-		/// Usually, swapping is a useless feature, since usually you can just 
+		/// Usually, swapping is a useless feature, since usually you can just
 		/// swap the references to two lists instead of the contents of two lists.
-		/// This method is provided anyway because <see cref="AList{T}.Append"/> 
-		/// and <see cref="AList{T}.Prepend"/> need to be able to swap in-place in 
+		/// This method is provided anyway because <see cref="AList{T}.Append"/>
+		/// and <see cref="AList{T}.Prepend"/> need to be able to swap in-place in
 		/// some cases.
 		/// <para/>
-		/// The derived class must manually swap any additional data members that 
+		/// The derived class must manually swap any additional data members that
 		/// it defines.
 		/// </remarks>
 		protected void SwapHelper(AListBase<K, T> other, bool swapObservers)
@@ -1083,7 +1082,7 @@
 		/// <summary>Diagnostic method. Returns the number of elements of the list
 		/// that are located in immutable nodes, which will be copied if modified.
 		/// Used by the test suite.</summary>
-		/// <remarks>Variable time required. Scans all nodes if none are immutable; 
+		/// <remarks>Variable time required. Scans all nodes if none are immutable;
 		/// stops at the root if the root is immutable.</remarks>
 		public int GetImmutableCount()
 		{
@@ -1097,7 +1096,7 @@
 		/// <summary>Attaches a tree observer to this object.</summary>
 		/// <returns>True if the observer was added, false if it was already attached.</returns>
 		/// <remarks>
-		/// The tree observer mechanism is much more advanced, and less efficient, 
+		/// The tree observer mechanism is much more advanced, and less efficient,
 		/// than the <see cref="ListChanging"/> event. You should use that event
 		/// instead if you can accomplish what you need with it.
 		/// <para/>
@@ -1137,13 +1136,13 @@
 		{
 			if (_freezeMode == FrozenForConcurrency)
 				ThrowFrozen();
-			
+
 			if (_observer == observer)
 			{
 				observer.Detach();
 				_observer = null;
 				return true;
-			} 
+			}
 			var mgr = _observer as ObserverMgr;
 			if (mgr != null && mgr.RemoveObserver(observer))
 			{
@@ -1151,14 +1150,14 @@
 					_observer = null;
 				return true;
 			}
-			
+
 			return false;
 		}
 
 		/// <summary>Returns the number of tree observers attached to this list.</summary>
 		public int ObserverCount
 		{
-			get { 
+			get {
 				if (_observer == null)
 					return 0;
 				if (_observer is ObserverMgr)

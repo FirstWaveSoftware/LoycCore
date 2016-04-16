@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Diagnostics;
 using Loyc.Math;
 
@@ -14,17 +12,17 @@ namespace Loyc.Geometry
 	/// They are separate from the class itself so that specialized versions are
 	/// available for particular types (notably int, double and float).
 	/// <para/>
-	/// X1 and Y1 should contains the minimum coordinates, while X2 and Y2 
-	/// should contain the maximum coordinates. BoundingBox generally does not 
+	/// X1 and Y1 should contains the minimum coordinates, while X2 and Y2
+	/// should contain the maximum coordinates. BoundingBox generally does not
 	/// guarantee that this is true unless you call <see cref="BoundingBoxExt.Normalize{T}"/>,
-	/// or if you use a constructor that accepts two points (rather than 
+	/// or if you use a constructor that accepts two points (rather than
 	/// explicit minimum and maximum coordinates.) Some methods will not work
-	/// correctly if the "maximum" coordinate is less than the "minimum" 
-	/// coordinate; they may simply assume that the maximum exceeds the 
+	/// correctly if the "maximum" coordinate is less than the "minimum"
+	/// coordinate; they may simply assume that the maximum exceeds the
 	/// minumum.
 	/// <para/>
-	/// A BoundingBox is considered to include both the minimum and maximum 
-	/// coordinates. A point on the border is considered to be within the 
+	/// A BoundingBox is considered to include both the minimum and maximum
+	/// coordinates. A point on the border is considered to be within the
 	/// bounding box, and the Width and Height are incremented to account
 	/// for this. For example, if T is int and (X1,X2)=(0,10), the Width is
 	/// 11; if T is float and (X1,X2)=(0,10), the Width is infitessimally
@@ -197,7 +195,7 @@ namespace Loyc.Geometry
 				self.SetXRange(m.Sub(self.X1, amountX), m.Add(self.X2, amountX));
 			if (amountY.CompareTo(m.Zero) < 0 && m.Shl(m.Negate(amountY), 1).CompareTo(self.Width) >= 0)
 				self.SetYAndHeight(MathEx.Average(self.Y1, self.Y2), m.Zero);
-			else 
+			else
 				self.SetYRange(m.Sub(self.Y1, amountY), m.Add(self.Y2, amountY));
 		}
 		public static BoundingBox<T> Inflated<T>(this BoundingBox<T> self, T amountX, T amountY) where T : IConvertible, IComparable<T>, IEquatable<T>
@@ -212,7 +210,7 @@ namespace Loyc.Geometry
 			Deflate(copy, amountX, amountY);
 			return copy;
 		}
-		
+
 		public static Point<T> Center<T>(this BoundingBox<T> self) where T : IConvertible, IComparable<T>, IEquatable<T>
 		{
 			return new Point<T>(MathEx.Average(self.X1, self.X2), MathEx.Average(self.Y1, self.Y2));
@@ -251,14 +249,6 @@ namespace Loyc.Geometry
 					bb = bb.Union(bb2);
 			}
 			return bb;
-		}
-		public static System.Drawing.Rectangle AsBCL(this BoundingBox<int> bbox)
-		{
-			return new System.Drawing.Rectangle(bbox.X1, bbox.Y1, bbox.X2 - bbox.X1, bbox.Y2 - bbox.Y1);
-		}
-		public static System.Drawing.RectangleF AsBCL(this BoundingBox<float> bbox)
-		{
-			return new System.Drawing.RectangleF(bbox.X1, bbox.Y1, bbox.X2 - bbox.X1, bbox.Y2 - bbox.Y1);
 		}
 	}
 }

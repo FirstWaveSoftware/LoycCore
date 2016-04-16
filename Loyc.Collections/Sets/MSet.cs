@@ -15,14 +15,14 @@ namespace Loyc.Collections
 	// NOTE: we have to use cref="Impl.InternalSet{T}" because the property InternalSet exists
 	/// <summary>A mutable set.</summary>
 	/// <remarks>
-	/// This class is based on <see cref="Impl.InternalSet{T}"/>; see its documentation 
+	/// This class is based on <see cref="Impl.InternalSet{T}"/>; see its documentation
 	/// for technical details about the implementation.
 	/// <para/>
-	/// Assuming T is a reference type, this class uses less memory than <see 
-	/// cref="HashSet{T}"/> and, under certain conditions, is faster. Specifically, 
+	/// Assuming T is a reference type, this class uses less memory than <see
+	/// cref="HashSet{T}"/> and, under certain conditions, is faster. Specifically,
 	/// <ul>
-	/// <li>This class is optimized for objects whose Equals() and GetHashCode() 
-	/// methods are fast, or for which equality is synonymous with "reference 
+	/// <li>This class is optimized for objects whose Equals() and GetHashCode()
+	/// methods are fast, or for which equality is synonymous with "reference
 	/// equality" so it is not necessary to call Equals() at all.</li>
 	/// <li>This class supports fast cloning and overloads the following operators
 	/// to perform set operations: &amp; (intersection), | (union), - (subtraction, i.e.
@@ -34,14 +34,13 @@ namespace Loyc.Collections
 	/// method for T is slow; up to four comparisons are required per add/remove
 	/// operation.
 	/// <para/>
-	/// You can convert <see cref="MSet{T}"/> to <see cref="Set{T}"/> 
+	/// You can convert <see cref="MSet{T}"/> to <see cref="Set{T}"/>
 	/// and back in O(1) time using a C# cast operator.
 	/// <para/>
 	/// Performance warning: GetHashCode() XORs the hashcodes of all items in the
-	/// set, while Equals() is a synonym for SetEquals(). Be aware that these 
+	/// set, while Equals() is a synonym for SetEquals(). Be aware that these
 	/// methods are very slow for large sets.
 	/// </remarks>
-	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
 	[DebuggerDisplay("Count = {Count}")]
 	public class MSet<T> : ISetImm<T>, ISetImm<T, MSet<T>>, ICollection<T>, ICloneable<MSet<T>>, IReadOnlyCollection<T>, ISinkCollection<T>, IEquatable<MSet<T>>, ISet<T>
@@ -79,8 +78,8 @@ namespace Loyc.Collections
 			throw new ArgumentException("The item already exists in the set.");
 		}
 
-		/// <summary>Searches for an item. If the item is found, the copy in the 
-		/// set is returned in the 'item' parameter. Note: there is no reason to 
+		/// <summary>Searches for an item. If the item is found, the copy in the
+		/// set is returned in the 'item' parameter. Note: there is no reason to
 		/// call this method in a set of completely immutable; in such cases,
 		/// call <see cref="Contains"/> instead.</summary>
 		/// <returns>true if the item was found, false if not.</returns>
@@ -89,10 +88,10 @@ namespace Loyc.Collections
 			return _set.Find(ref item, _comparer);
 		}
 
-		/// <summary>Adds the specified item to the set, and retrieves an existing 
+		/// <summary>Adds the specified item to the set, and retrieves an existing
 		/// copy of the item if one existed. Note: there is no reason to call this
-		/// method in a set of singletons (e.g. <see cref="Symbol"/>) because if an 
-		/// item is found, it will always be the exact same object that you searched 
+		/// method in a set of singletons (e.g. <see cref="Symbol"/>) because if an
+		/// item is found, it will always be the exact same object that you searched
 		/// for.</summary>
 		/// <param name="item">An object to search for. If this method returns false,
 		/// this parameter is changed to the existing value that was found in the
@@ -100,7 +99,7 @@ namespace Loyc.Collections
 		/// <param name="replaceIfPresent">If true, and a matching item exists in
 		/// the set, that item will be replaced with the specified new item. The
 		/// old value will be returned in the 'item' parameter.</param>
-		/// <returns>True if a new item was added, false if the item already 
+		/// <returns>True if a new item was added, false if the item already
 		/// existed in the set.</returns>
 		public bool AddOrFind(ref T item, bool replaceIfPresent)
 		{
@@ -112,8 +111,8 @@ namespace Loyc.Collections
 		}
 
 		/// <summary>Adds the specified item to the set.</summary>
-		/// <param name="replaceIfPresent">If true, and a matching item is 
-		/// already present in the set, the specified item replaces the existing 
+		/// <param name="replaceIfPresent">If true, and a matching item is
+		/// already present in the set, the specified item replaces the existing
 		/// copy. If false, the existing copy is left alone. This parameter
 		/// has no effect in a set of singletons (e.g. <see cref="Symbol"/>).</param>
 		/// <returns>true if the item was new, false if it was already present.</returns>
@@ -125,7 +124,7 @@ namespace Loyc.Collections
 		/// <summary>Fast-clones the set in O(1) time.</summary>
 		/// <remarks>
 		/// Once the set is cloned, modifications to both sets take
-		/// longer because portions of the set must be duplicated. See 
+		/// longer because portions of the set must be duplicated. See
 		/// <see cref="Impl.InternalSet{T}"/> for details about the fast-
 		/// cloning technique.</remarks>
 		public virtual MSet<T> Clone()
@@ -303,7 +302,7 @@ namespace Loyc.Collections
 		ISetImm<T> ISetOperations<T, IEnumerable<T>, ISetImm<T>>.Intersect(IEnumerable<T> other) { return Intersect(other); }
 		ISetImm<T> ISetOperations<T, IEnumerable<T>, ISetImm<T>>.Except(IEnumerable<T> other) { return Except(other); }
 		ISetImm<T> ISetOperations<T, IEnumerable<T>, ISetImm<T>>.Xor(IEnumerable<T> other) { return Xor(other); }
-		
+
 		public MSet<T> With(T item)
 		{
 			var set = _set.CloneFreeze();
@@ -380,7 +379,7 @@ namespace Loyc.Collections
 
 		#region Operators: & | - ^ +
 		// Note that if the two operands use different comparers or have different
-		// types, the comparer and type of the left operand propagates to the 
+		// types, the comparer and type of the left operand propagates to the
 		// result. When mixing Set<T> and MSet<T>, it is advisable
 		// to use Set<T> as the left-hand argument because the left-argument
 		// is always freeze-cloned, which is a no-op for Set<T>.
@@ -409,7 +408,7 @@ namespace Loyc.Collections
 			return new Set<T>(this.InternalSet, this.Comparer, this.Count);
 		}
 
-		/// <summary>Removes all elements that match the conditions defined by the 
+		/// <summary>Removes all elements that match the conditions defined by the
 		/// specified predicate from this collection.</summary>
 		/// <returns>The number of elements that were removed from the set.</returns>
 		public int RemoveWhere(Predicate<T> match)
@@ -438,7 +437,7 @@ namespace Loyc.Collections
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void ThawRoot() { _set.Thaw(); } // for a benchmark test
 
-		/// <summary>Measures the total size of all objects allocated to this 
+		/// <summary>Measures the total size of all objects allocated to this
 		/// collection, in bytes, including the size of this object itself; see
 		/// <see cref="Impl.InternalSet{T}.CountMemory"/>.</summary>
 		public long CountMemory(int sizeOfT)

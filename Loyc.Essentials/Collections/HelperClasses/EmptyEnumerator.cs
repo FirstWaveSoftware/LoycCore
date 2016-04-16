@@ -6,7 +6,6 @@ using System.Collections.Generic;
 namespace Loyc.Collections
 {
 	/// <summary>Helper class: an empty enumerator.</summary>
-	[Serializable]
 	public class EmptyEnumerator<T> : IEnumerator<T>, IEnumerator
 	{
 		public static readonly EmptyEnumerator<T> Value = new EmptyEnumerator<T>();

@@ -177,13 +177,13 @@ namespace Loyc.Collections.Tests
 				// Note: change notifications are sent before the add/remove happens
 				if (sizeChange > 0)
 				{
-					Assert.AreEqual(NotifyCollectionChangedAction.Add, args.Action);
+					Assert.AreEqual(NotifyCollectionChanged.Add, args.Action);
 					Assert.That(args.NewItems != null && args.NewItems.Count == 1);
 					Assert.AreEqual(changeItem, GetKey(args.NewItems[0]));
 				}
 				else if (sizeChange < 0) 
 				{
-					Assert.AreEqual(NotifyCollectionChangedAction.Remove, args.Action);
+					Assert.AreEqual(NotifyCollectionChanged.Remove, args.Action);
 					Assert.AreEqual(changeItem, GetKey(sender[args.Index]));
 				}
 			};
@@ -216,7 +216,7 @@ namespace Loyc.Collections.Tests
 
 			// Call changeHandler again to verify that all notifications were sent
 			changeIndex = 0;
-			changeHandler(alist1, new ListChangeInfo<T>(NotifyCollectionChangedAction.Reset, 0, 0, null));
+			changeHandler(alist1, new ListChangeInfo<T>(NotifyCollectionChanged.Reset, 0, 0, null));
 		}
 
 		[Test]
@@ -314,7 +314,7 @@ namespace Loyc.Collections.Tests
 			int sizeChange = 0;
 			ListChangingHandler<T> clearCheck = (sender, args) =>
 			{
-				Assert.AreEqual(NotifyCollectionChangedAction.Remove, args.Action);
+				Assert.AreEqual(NotifyCollectionChanged.Remove, args.Action);
 				Assert.AreEqual(0, args.Index);
 				sizeChange += args.SizeChange;
 			};

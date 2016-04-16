@@ -1,6 +1,6 @@
 /*
  * Created by David on 7/19/2007 at 10:16 PM
- * 
+ *
  * Original copyright notice follows.
  */
 //
@@ -23,10 +23,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -42,12 +42,11 @@ using System.Collections.Generic;
 
 namespace Loyc.Collections
 {
-	/// <summary>Adapter: this is a read-only collection of Keys read from a 
-	/// generic IDictionary. It is a modified version of 
-	/// Dictionary{TKey, TValue}.KeyCollection from the Mono project, changed 
+	/// <summary>Adapter: this is a read-only collection of Keys read from a
+	/// generic IDictionary. It is a modified version of
+	/// Dictionary{TKey, TValue}.KeyCollection from the Mono project, changed
 	/// to use IDictionary instead of Dictionary.</summary>
-	[Serializable]
-	public class KeyCollection<TKey, TValue> : ICollection<TKey>, IReadOnlyCollection<TKey>, IEnumerable<TKey>, ICollection, IEnumerable 
+	public class KeyCollection<TKey, TValue> : ICollection<TKey>, IReadOnlyCollection<TKey>, IEnumerable<TKey>, ICollection, IEnumerable
 	{
 		IReadOnlyDictionary<TKey, TValue> dictionary;
 
@@ -130,7 +129,6 @@ namespace Loyc.Collections
 			get { return ((ICollection) dictionary).SyncRoot; }
 		}
 
-		[Serializable]
 		public struct Enumerator : IEnumerator<TKey>, IDisposable, IEnumerator {
 			IEnumerator<KeyValuePair<TKey, TValue>> host_enumerator;
 

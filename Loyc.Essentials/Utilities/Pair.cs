@@ -6,13 +6,13 @@ using System.Diagnostics;
 namespace Loyc
 {
 	/// <summary><c>Pair.Create(a, b)</c> is a helper method for making pairs.</summary>
-	/// <remarks>To avoid creating an extra class, this class also contains 
+	/// <remarks>To avoid creating an extra class, this class also contains
 	/// <c>Pair.Create(a, b, c)</c> which makes triplet structs.</remarks>
 	public static class Pair
 	{
 		public static Pair<T1, T2> Create<T1, T2>(T1 item1, T2 item2)
 			{ return new Pair<T1, T2>(item1, item2); }
-		public static Triplet<T1, T2, T3> Create<T1, T2, T3>(T1 item1, T2 item2, T3 item3) 
+		public static Triplet<T1, T2, T3> Create<T1, T2, T3>(T1 item1, T2 item2, T3 item3)
 			{ return new Triplet<T1, T2, T3>(item1, item2, item3); }
 	}
 
@@ -20,23 +20,22 @@ namespace Loyc
 	/// <remarks>
 	/// The BCL has a <see cref="KeyValuePair{A,B}"/> structure that has two problems:
 	/// not all pairs are key-value pairs, and its name is overly long and clumsy.
-	/// There is also a <see cref="Tuple{T1,T2}"/> type, whose problem is that it 
+	/// There is also a <see cref="Tuple{T1,T2}"/> type, whose problem is that it
 	/// requires a heap allocation.
 	/// <para/>
-	/// For compatibility with <see cref="KeyValuePair{A,B}"/>, this 
+	/// For compatibility with <see cref="KeyValuePair{A,B}"/>, this
 	/// structure has <c>Key</c> and <c>Value</c> properties. For compatibility
-	/// with <see cref="Tuple{A,B}"/>, it has <c>Item1</c> and <c>Item2</c> 
+	/// with <see cref="Tuple{A,B}"/>, it has <c>Item1</c> and <c>Item2</c>
 	/// properties. Respectively, these properties refer to the A and B fields.
 	/// <para/>
-	/// This is a mutable structure. Some people fear mutable structures, but I have 
-	/// heard all the arguments, and find them unpersuasive. The most common pitfall, 
+	/// This is a mutable structure. Some people fear mutable structures, but I have
+	/// heard all the arguments, and find them unpersuasive. The most common pitfall,
 	/// changing a copy and expecting a different copy to change, is nothing more than
-	/// ignorance about how structs work. The second most common pitfall involves 
+	/// ignorance about how structs work. The second most common pitfall involves
 	/// mutator methods inside a struct, but this struct doesn't have any of those
-	/// (and the problem would largely be fixed by a compiler-recognized attribute 
+	/// (and the problem would largely be fixed by a compiler-recognized attribute
 	/// like <c>[Mutates]</c> that would detect potential problems).
 	/// </remarks>
-	[Serializable]
 	[DebuggerDisplay("A = {A}, B = {B}")]
 	public struct Pair<T1, T2> : IComparable, IComparable<Pair<T1, T2>>, IEquatable<Pair<T1, T2>>, IHasValue<T2>
 	{
@@ -47,7 +46,7 @@ namespace Loyc
 		public T1 Item1 { [DebuggerStepThrough] get { return A; } set { A = value; } }
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)] // reduce clutter in debugger
 		public T2 Item2 { [DebuggerStepThrough] get { return B; } set { B = value; } }
-		
+
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)] // reduce clutter in debugger
 		public T1 Key   { [DebuggerStepThrough] get { return A; } set { A = value; } }
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)] // reduce clutter in debugger
@@ -92,11 +91,10 @@ namespace Loyc
 
 	/// <summary>A tuple of three values (<c>A</c>, <c>B</c> and <c>C</c>) in a struct.</summary>
 	/// <remarks>
-	/// For compatibility with <see cref="Tuple{A,B,C}"/>, it has <c>Item1</c>, 
-	/// <c>Item2</c> and <c>Item3</c> properties, which refer to the A, B and 
+	/// For compatibility with <see cref="Tuple{A,B,C}"/>, it has <c>Item1</c>,
+	/// <c>Item2</c> and <c>Item3</c> properties, which refer to the A, B and
 	/// C fields, respectively.
 	/// </remarks>
-	[Serializable]
 	[DebuggerDisplay("A = {A}, B = {B}, C = {C}")]
 	public struct Triplet<T1, T2, T3>
 	{
@@ -152,10 +150,10 @@ namespace Loyc
 		}
 	}
 
-	/// <summary>A trivial class that holds a single value of type T in the 
+	/// <summary>A trivial class that holds a single value of type T in the
 	/// <see cref="Value"/> property.
 	/// </summary><remarks>
-	/// This class is useful mainly as an alternative to standard boxing. When you 
+	/// This class is useful mainly as an alternative to standard boxing. When you
 	/// box a structure in C#, you lose access to the members of that structure.
 	/// This class, in contrast, provides access to the "boxed" value.
 	/// </remarks>

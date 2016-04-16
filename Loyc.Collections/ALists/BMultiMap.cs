@@ -16,24 +16,23 @@ namespace Loyc.Collections
 	/// An <a href="http://core.loyc.net/collections/alists-part2.html">article</a>
 	/// about the BList classes is available.
 	/// <para/>
-	/// Often when people want to be able to associate multiple values with a 
+	/// Often when people want to be able to associate multiple values with a
 	/// single key, they use a Dictionary with values of type <see cref="List{T}"/>.
-	/// This approach is very inefficient (in terms of memory use) if most keys are 
+	/// This approach is very inefficient (in terms of memory use) if most keys are
 	/// only associated with one or two values; this class solves the problem using
 	/// a single sorted B+ tree for all keys and all values. It requires, however,
 	/// that both the keys and values are totally ordered (i.e. are sortable).
 	/// <para/>
 	/// By default, keys and values are sorted using <see cref="Comparer{T}.Default"/>.
 	/// This will work provided that the keys and values both implement the
-	/// <see cref="IComparable{T}"/> interface. If they don't, you can pass custom 
+	/// <see cref="IComparable{T}"/> interface. If they don't, you can pass custom
 	/// comparison functions to the constructor instead (one comparison function for
 	/// keys, and a second one for values).
 	/// <para/>
-	/// Since it is derived from <see cref="BList{T}"/>, this class enjoys the space 
-	/// efficiency of a B+ tree and capabilities of a <see cref="AListBase{K,V}"/>, 
+	/// Since it is derived from <see cref="BList{T}"/>, this class enjoys the space
+	/// efficiency of a B+ tree and capabilities of a <see cref="AListBase{K,V}"/>,
 	/// although it tends to be slower than <see cref="Dictionary{K,V}"/>.
 	/// </remarks>
-	[Serializable]
 	public class BMultiMap<K, V> : BList<KeyValuePair<K, V>>, IReadOnlyDictionary<K, BMultiMap<K,V>.ValueList>
 	{
 		#region Constructors
@@ -51,7 +50,7 @@ namespace Loyc.Collections
 			_compareKeys = DefaultKComparison;
 			_compareValues = DefaultVComparison;
 		}
-		
+
 		public BMultiMap(Func<K, K, int> compareKeys)
 			: this(compareKeys, DefaultVComparison) { }
 		public BMultiMap(Func<K, K, int> compareKeys, Func<V, V, int> compareValues)
@@ -67,7 +66,7 @@ namespace Loyc.Collections
 		}
 
 		#endregion
-		
+
 		#region Member variables and comparison functions
 
 		protected readonly static Func<K, K, int> DefaultKComparison = Comparer<K>.Default.Compare;
@@ -99,7 +98,7 @@ namespace Loyc.Collections
 			// When searchKey==candidate, act like searchKey>candidate.
 			return -(_compareKeys(searchKey.Key, candidate.Key) | 1);
 		}
-		
+
 		#endregion
 
 		#region IDictionary-like Members
@@ -127,7 +126,7 @@ namespace Loyc.Collections
 		/// <summary>Finds the lowest index of an item with the specified key.</summary>
 		/// <param name="key">Key to search for</param>
 		/// <returns>The index of the item that was found, or -1 if there is no such item.</returns>
-		/// <remarks>This method is like <see cref="FindLowerBound"/> except that 
+		/// <remarks>This method is like <see cref="FindLowerBound"/> except that
 		/// it returns -1 if the key was not found.</remarks>
 		public int FirstIndexOf(K key)
 		{
@@ -150,7 +149,7 @@ namespace Loyc.Collections
 			return DoSingleOperation(ref op) < 0;
 		}
 
-		/// <summary>Removes up to a specified number of items from the collections 
+		/// <summary>Removes up to a specified number of items from the collections
 		/// that have the specified key.</summary>
 		/// <param name="key">The key to remove.</param>
 		/// <param name="maxToRemove">Maximum number of items to remove.</param>
@@ -177,7 +176,7 @@ namespace Loyc.Collections
 			return 0;
 		}
 
-		/// <summary>Removes all the items from the collection whose key compares 
+		/// <summary>Removes all the items from the collection whose key compares
 		/// equal to the specified key.</summary>
 		/// <param name="key">The key to remove.</param>
 		/// <returns>The number of items removed.</returns>
@@ -216,16 +215,16 @@ namespace Loyc.Collections
 			Add(new KeyValuePair<K, V>(key, value));
 		}
 
-		/// <summary>Represents the set of values associated with a particular key 
+		/// <summary>Represents the set of values associated with a particular key
 		/// in a <see cref="BMultiMap{K,V}"/> collection.</summary>
-		/// <remarks>Renamed from <c>Values</c> because C# wouldn't let me 
+		/// <remarks>Renamed from <c>Values</c> because C# wouldn't let me
 		/// implement a <c>Values</c> property (for the <c>IReadOnlyDictionary</c>
 		/// interface) at the same time.</remarks>
 		public struct ValueList : IReadOnlyCollection<V>, ICollection<V>
 		{
 			readonly BMultiMap<K, V> _map;
 			readonly K _key;
-			
+
 			internal ValueList(BMultiMap<K, V> map, K key)
 			{
 				_map = map;
@@ -274,7 +273,7 @@ namespace Loyc.Collections
 
 			#region ICollection<V> Members
 
-			/// <summary>Adds a new item associated with the key that this object 
+			/// <summary>Adds a new item associated with the key that this object
 			/// represents. Allows duplicate values.</summary>
 			/// <param name="item">Value to add.</param>
 			public void Add(V item)
@@ -322,14 +321,14 @@ namespace Loyc.Collections
 		#endregion
 
 		#region FindLowerBound, FindUpperBound
-		
+
 		/// <summary>Finds the lowest index of an item that is equal to or greater than the specified item.</summary>
 		/// <param name="key">The key to find.</param>
 		/// <param name="value">The first value associated with the specified key,
 		/// if the key was found, or default(V) if not.</param>
 		/// <param name="found">Set to true if the item was found, false if not.</param>
 		/// <returns>The index of the item that was found, or of the next greater
-		/// item, or Count if the given key is greater than the keys of all items 
+		/// item, or Count if the given key is greater than the keys of all items
 		/// in the list.</returns>
 		public int FindLowerBound(K key)
 		{
@@ -361,10 +360,10 @@ namespace Loyc.Collections
 			return (int)op.BaseIndex;
 		}
 
-		/// <summary>Finds the index of the first item in the list whose key is 
+		/// <summary>Finds the index of the first item in the list whose key is
 		/// greater than the specified key.</summary>
-		/// <param name="key">The key to find. If passed by reference, when this 
-		/// method returns, item is set to the next greater item than the item you 
+		/// <param name="key">The key to find. If passed by reference, when this
+		/// method returns, item is set to the next greater item than the item you
 		/// searched for, or left unchanged if there is no greater item.</param>
 		/// <param name="index">The index of the next greater item that was found,
 		/// or Count if the given item is greater than all items in the list.</param>
@@ -378,10 +377,10 @@ namespace Loyc.Collections
 			return (int)op.BaseIndex;
 		}
 
-		/// <summary>Does the same thing as <see cref="IndexOfExact"/>, but with 
+		/// <summary>Does the same thing as <see cref="IndexOfExact"/>, but with
 		/// the same set of arguments as <see cref="FindLowerBound"/> including
 		/// the value associated with the matching key.</summary>
-		/// <returns>Lowest index of a matching item if found, or the same return 
+		/// <returns>Lowest index of a matching item if found, or the same return
 		/// value as <see cref="FindLowerBound"/> if not found.</returns>
 		public int FindLowerBoundExact(ref K key, out V value, out bool found)
 		{
@@ -408,11 +407,11 @@ namespace Loyc.Collections
 		}
 
 		/// <summary>
-		/// Specialized search function that finds the first index of an item whose 
-		/// key compares equal to the specified key, not only according to the 
-		/// comparison function for this collection, but also according to 
-		/// <see cref="Object.Equals"/>. This function works properly even if 
-		/// duplicate keys exist in addition that do NOT compare equal according 
+		/// Specialized search function that finds the first index of an item whose
+		/// key compares equal to the specified key, not only according to the
+		/// comparison function for this collection, but also according to
+		/// <see cref="Object.Equals"/>. This function works properly even if
+		/// duplicate keys exist in addition that do NOT compare equal according
 		/// to <see cref="Object.Equals"/>.
 		/// </summary>
 		/// <remarks>
@@ -429,7 +428,7 @@ namespace Loyc.Collections
 			else
 				return -1;
 		}
- 
+
 		#endregion
 
 		#region IReadOnlyDictionary<K, Values> members
@@ -460,14 +459,14 @@ namespace Loyc.Collections
 		/// <summary>Returns an enumerator of <c>KeyValuePair&lt;K, Values></c> which lets
 		/// you see the list values associated with each key.</summary>
 		/// <remarks>
-		/// You can safely modify the subcollections as you enumerate, 
+		/// You can safely modify the subcollections as you enumerate,
 		/// and you can even modify other parts of the BMultiMap.
 		/// <para/>
-		/// Please note that <c>BMultiMap</c> contains two GetEnumerator() methods, due to 
-		/// its dual identity as <c>BList{KeyValuePair{K, V}}</c> and as a 
-		/// <c>IReadOnlyDictionary{K, Values}</c>. <c>IEnumerator.GetEnumerator()</c> 
+		/// Please note that <c>BMultiMap</c> contains two GetEnumerator() methods, due to
+		/// its dual identity as <c>BList{KeyValuePair{K, V}}</c> and as a
+		/// <c>IReadOnlyDictionary{K, Values}</c>. <c>IEnumerator.GetEnumerator()</c>
 		/// and the <c>GetEnumerator()</c> method in the base class both
-		/// enumerate <c>KeyValuePair{K, V}</c>, whereas this method 
+		/// enumerate <c>KeyValuePair{K, V}</c>, whereas this method
 		/// enumerates <c>KeyValuePair{K, Values}</c>.
 		/// </remarks>
 		IEnumerator<KeyValuePair<K, ValueList>> IEnumerable<KeyValuePair<K, ValueList>>.GetEnumerator()

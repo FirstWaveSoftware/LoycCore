@@ -7,7 +7,6 @@
 	using System.Collections.Specialized;
 
 	/// <summary>Internal implementation class. Leaf node of <see cref="BList{T}"/> and <see cref="BDictionary{K,V}"/>.</summary>
-	[Serializable]
 	public class BListLeaf<K, T> : AListLeaf<K, T>
 	{
 		public BListLeaf(ushort maxNodeSize) : base(maxNodeSize) { }
@@ -47,11 +46,11 @@
 						throw new KeyAlreadyExistsException();
 					else if (op.Mode == AListOperation.AddIfNotPresent)
 						return 0;
-				} 
+				}
 				else // add new item
 				{
 					if (HasListChanging(op.List))
-						CallListChanging(op.List, new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, (int)op.BaseIndex, 1, ListExt.Single(searchItem)));
+						CallListChanging(op.List, new ListChangeInfo<T>(NotifyCollectionChanged.Add, (int)op.BaseIndex, 1, ListExt.Single(searchItem)));
 
 					if (index == _list.Count)
 					{	// Highest key may change
@@ -78,7 +77,7 @@
 				if (op.Mode == AListOperation.Remove)
 				{
 					if (HasListChanging(op.List))
-						CallListChanging(op.List, new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, (int)op.BaseIndex, -1, null));
+						CallListChanging(op.List, new ListChangeInfo<T>(NotifyCollectionChanged.Remove, (int)op.BaseIndex, -1, null));
 
 					_list.RemoveAt(index);
 
@@ -112,8 +111,8 @@
 			// Fallthrough action: replace existing item
 			Debug.Assert(op.Found);
 			if (HasListChanging(op.List))
-				CallListChanging(op.List, new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, (int)op.BaseIndex, 0, ListExt.Single(searchItem)));
-			
+				CallListChanging(op.List, new ListChangeInfo<T>(NotifyCollectionChanged.Replace, (int)op.BaseIndex, 0, ListExt.Single(searchItem)));
+
 			_list[index] = searchItem;
 
 			if (index + 1 == _list.Count)

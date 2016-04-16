@@ -8,9 +8,9 @@
 	using System.Diagnostics;
 	using Loyc.Collections.Impl;
 	using Loyc.Math;
-	
+
 	/// <summary>
-	/// An sorted in-memory list that is efficient for all operations and offers 
+	/// An sorted in-memory list that is efficient for all operations and offers
 	/// indexed access to its list.
 	/// </summary>
 	/// <remarks>
@@ -20,7 +20,7 @@
 	/// When you need a sorted list of items, there's nothing quite like a BList. BList offers
 	/// numerous features that none of the standard .NET collections can offer:
 	/// <ul>
-	/// <li>O(log N) efficiency for all standard list operations (Add, Remove, 
+	/// <li>O(log N) efficiency for all standard list operations (Add, Remove,
 	/// IndexOf, this[]) plus and O(1) fast cloning and O(1)-per-element enumeration.</li>
 	/// <li>Changes can be observed through the <see cref="AListBase{K,T}.ListChanging"/> event.
 	/// The performance penalty for this feature is lower than for the standard
@@ -29,10 +29,10 @@
 	/// <li>The list can be frozen with <see cref="AListBase{K,T}.Freeze"/>, making it read-only.</li>
 	/// <li><see cref="FindLowerBound"/> and <see cref="FindUpperBound"/> operations
 	/// that find the nearest item equal to or greater than a specified item.</li>
-	/// <li>A reversed view of the list is available through the <see cref="AListBase{K,T}.ReverseView"/> 
-	/// property, and the list can be enumerated backwards, also in O(1) time 
+	/// <li>A reversed view of the list is available through the <see cref="AListBase{K,T}.ReverseView"/>
+	/// property, and the list can be enumerated backwards, also in O(1) time
 	/// per element.</li>.
-	/// <li>A BList normally uses less memory than a <see cref="SortedDictionary{K,V}"/> 
+	/// <li>A BList normally uses less memory than a <see cref="SortedDictionary{K,V}"/>
 	/// or a hashtable such as <see cref="HashSet{T}"/> or <see cref="Dictionary{K,V}"/>.</li>
 	/// <li>Other features inherited from <see cref="AListBase{T}"/></li>
 	/// </ul>
@@ -41,12 +41,11 @@
 	/// only use it when you need a sorted list of items, or when you need its
 	/// special features such as <see cref="FindLowerBound"/> or observability.
 	/// <para/>
-	/// Caution: items must not be modified in a way that affects their sort order 
+	/// Caution: items must not be modified in a way that affects their sort order
 	/// after they are added to the list. If the list ever stops being sorted, it
-	/// will malfunction, as it will no longer be possible to find some of the 
+	/// will malfunction, as it will no longer be possible to find some of the
 	/// items.
 	/// </remarks>
-	[Serializable]
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	public class BList<T> : AListBase<T, T>, IListSource<T>, ICollectionEx<T>, IAddRange<T>, ICloneable<BList<T>>
 	{
@@ -55,7 +54,7 @@
 		/// <summary>Initializes an empty BList.</summary>
 		/// <remarks>By default, elements of the list will be compared using
 		/// <see cref="Comparer{T}.Default"/>.Compare.</remarks>
-		public BList() 
+		public BList()
 			: this(AListLeaf<T, T>.DefaultMaxNodeSize, AListInnerBase<T, T>.DefaultMaxNodeSize) { }
 		/// <inheritdoc cref="BList(Func{T,T,int}, int, int)"/>
 		public BList(int maxLeafSize)
@@ -69,22 +68,22 @@
 		/// <inheritdoc cref="BList(Func{T,T,int}, int, int)"/>
 		public BList(Func<T,T,int> compareItems, int maxLeafSize)
 			: this(compareItems, maxLeafSize, AListInnerBase<T, T>.DefaultMaxNodeSize) { }
-		
+
 		/// <summary>Initializes an empty BList.</summary>
-		/// <param name="compareItems">A method that compares two items and returns 
+		/// <param name="compareItems">A method that compares two items and returns
 		/// -1 if the first item is smaller than the second item, 0 if it is equal,
 		/// and 1 if it is greater.</param>
 		/// <param name="maxLeafSize">Maximum number of elements to place in a leaf node of the B+ tree.</param>
 		/// <param name="maxInnerSize">Maximum number of elements to place in an inner node of the B+ tree.</param>
 		/// <remarks>
-		/// If present, the compareKeys parameter must be a "Func" delegate instead 
-		/// of the more conventional <see cref="Comparison{T}"/> delegate for an 
-		/// obscure technical reason (specifically, it is the type required by 
-		/// <see cref="AListSingleOperation{K,T}.CompareToKey"/>). You should not 
-		/// notice any difference between the two, but the stupid .NET type system 
-		/// insists that the two types are not compatible. So, if (for some reason) 
+		/// If present, the compareKeys parameter must be a "Func" delegate instead
+		/// of the more conventional <see cref="Comparison{T}"/> delegate for an
+		/// obscure technical reason (specifically, it is the type required by
+		/// <see cref="AListSingleOperation{K,T}.CompareToKey"/>). You should not
+		/// notice any difference between the two, but the stupid .NET type system
+		/// insists that the two types are not compatible. So, if (for some reason)
 		/// you already happen to have a <see cref="Comparison{T}"/> delegate, you
-		/// must explicitly convert it to a Func delegate with code such as 
+		/// must explicitly convert it to a Func delegate with code such as
 		/// "new Func&lt;T,T,int>(comparisonDelegate)".
 		/// <para/>
 		/// If you leave out the compareKeys parameter, <see cref="Comparer{T}.Default"/>.Compare
@@ -93,7 +92,7 @@
 		/// See the documentation of <see cref="AListBase{K,T}"/> for a discussion
 		/// about node sizes.
 		/// <para/>
-		/// An empty BList is created with no root node, so it consumes much less 
+		/// An empty BList is created with no root node, so it consumes much less
 		/// memory than a BList with a single element.
 		/// </remarks>
 		public BList(Func<T,T,int> compareItems, int maxLeafSize, int maxInnerSize)
@@ -101,10 +100,10 @@
 
 		/// <inheritdoc cref="Clone(bool)"/>
 		/// <param name="items">A list of items to be cloned.</param>
-		public BList(BList<T> items, bool keepListChangingHandlers) 
+		public BList(BList<T> items, bool keepListChangingHandlers)
 			: base(items, keepListChangingHandlers) { _compareItems = items._compareItems; }
 
-		protected BList(BList<T> original, AListNode<T, T> section) 
+		protected BList(BList<T> original, AListNode<T, T> section)
 			: base(original, section) { _compareItems = original._compareItems; }
 
 		#endregion
@@ -153,8 +152,8 @@
 		/// <summary>Removes all instances of the specified item.</summary>
 		/// <param name="item">Item to remove</param>
 		/// <returns>The number of instances removed (0 if none).</returns>
-		/// <remarks>This method is not optimized. It takes twice as long as 
-		/// <see cref="Remove(T)"/> if there is only one instance, because the 
+		/// <remarks>This method is not optimized. It takes twice as long as
+		/// <see cref="Remove(T)"/> if there is only one instance, because the
 		/// tree is searched twice.</remarks>
 		public int RemoveAll(T item)
 		{
@@ -169,10 +168,10 @@
 		/// <param name="mode">Indicates the operation to perform.</param>
 		/// <param name="item">An item to be added or removed in the list. If the
 		/// item is passed by reference, and a matching item existed in the tree
-		/// already, this method returns the old version of the item via this 
+		/// already, this method returns the old version of the item via this
 		/// parameter.</param>
 		/// <returns>Returns the change in Count: 1 if the item was added, -1 if
-		/// the item was removed, and 0 if the item replaced an existing item or 
+		/// the item was removed, and 0 if the item replaced an existing item or
 		/// if nothing happened.</returns>
 		public int Do(AListOperation mode, ref T item)
 		{
@@ -265,12 +264,12 @@
 		}
 		/// <summary>Clones a BList.</summary>
 		/// <param name="keepListChangingHandlers">If true, ListChanging handlers
-		/// will be copied from the existing list of items to the new list. Note: 
-		/// if it exists, the NodeObserver is never copied. 
+		/// will be copied from the existing list of items to the new list. Note:
+		/// if it exists, the NodeObserver is never copied.
 		/// <see cref="AListBase{K,T}.ObserverCount"/> will be zero in the new list.</param>
 		/// <remarks>
-		/// Cloning is performed in O(1) time by marking the tree root as frozen 
-		/// and sharing it between the two lists. However, the new list itself will 
+		/// Cloning is performed in O(1) time by marking the tree root as frozen
+		/// and sharing it between the two lists. However, the new list itself will
 		/// not be frozen, even if the original list was marked as frozen. Instead,
 		/// nodes will be copied on demand when you modify the new list.
 		/// </remarks>
@@ -287,10 +286,10 @@
 		{
 			if ((uint)count > _count - (uint)start)
 				throw new ArgumentOutOfRangeException(count < 0 ? "count" : "start+count");
-			
+
 			var newList = new BList<T>(this, CopySectionHelper(start, count));
-			// bug fix: we must RemoveRange after creating the new list, because 
-			// the section is expected to have the same height as the original tree 
+			// bug fix: we must RemoveRange after creating the new list, because
+			// the section is expected to have the same height as the original tree
 			// during the constructor of the new list.
 			RemoveRange(start, count);
 			return newList;
@@ -327,14 +326,14 @@
 		}
 
 		/// <summary>Finds the lowest index of an item that is equal to or greater than the specified item.</summary>
-		/// <param name="item">The item to find. If passed by reference, when this 
-		/// method returns, item is set to the item that was found, or to the next 
-		/// greater item if the item was not found. If the item passed in is higher 
-		/// than all items in the list, it will be left unchanged when this method 
+		/// <param name="item">The item to find. If passed by reference, when this
+		/// method returns, item is set to the item that was found, or to the next
+		/// greater item if the item was not found. If the item passed in is higher
+		/// than all items in the list, it will be left unchanged when this method
 		/// returns.</param>
 		/// <param name="found">Set to true if the item was found, false if not.</param>
 		/// <returns>The index of the item that was found, or of the next
-		/// greater item, or Count if the given item is greater than all items 
+		/// greater item, or Count if the given item is greater than all items
 		/// in the list.</returns>
 		public int FindLowerBound(T item)
 		{
@@ -375,10 +374,10 @@
 			return (int)op.BaseIndex;
 		}
 
-		/// <summary>Finds the index of the first item in the list that is greater 
+		/// <summary>Finds the index of the first item in the list that is greater
 		/// than the specified item.</summary>
-		/// <param name="item">The item to find. If passed by reference, when this 
-		/// method returns, item is set to the next greater item than the item you 
+		/// <param name="item">The item to find. If passed by reference, when this
+		/// method returns, item is set to the next greater item than the item you
 		/// searched for, or left unchanged if there is no greater item.</param>
 		/// <returns>The index of the next greater item that was found,
 		/// or Count if the given item is greater than all items in the list.</returns>
@@ -402,17 +401,17 @@
 		}
 
 		/// <summary>
-		/// Specialized search function that finds the index of an item that not 
-		/// only compares equal to the specified item according to the comparison 
-		/// function for this collection, but is also equal according to 
-		/// <see cref="Object.Equals"/>. This function works properly even if 
-		/// duplicate items exist in addition that do NOT compare equal according 
+		/// Specialized search function that finds the index of an item that not
+		/// only compares equal to the specified item according to the comparison
+		/// function for this collection, but is also equal according to
+		/// <see cref="Object.Equals"/>. This function works properly even if
+		/// duplicate items exist in addition that do NOT compare equal according
 		/// to <see cref="Object.Equals"/>.
 		/// </summary>
 		/// <remarks>
 		/// This method is useful when the items in this collection are sorted by
-		/// hashcode, or when they are sorted by key but not sorted by value. In 
-		/// such cases, two items may be equal according to the comparison function 
+		/// hashcode, or when they are sorted by key but not sorted by value. In
+		/// such cases, two items may be equal according to the comparison function
 		/// but unequal in reality.
 		/// <para/>
 		/// Implementation note: this method does a scan across the equal items to

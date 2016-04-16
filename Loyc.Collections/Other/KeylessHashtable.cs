@@ -11,45 +11,44 @@ using Loyc.MiniTest;
 namespace Loyc.Collections.Impl
 {
 	/// <summary>
-	/// A fairly obscure space-saving hashtable that offers no built-in way to 
+	/// A fairly obscure space-saving hashtable that offers no built-in way to
 	/// store keys, only values. Because there are no keys, the hashtable cannot
 	/// be rehashed when it is full, and searching for a given key finds all
 	/// values in the same bucket, some of which may be unrelated.
 	/// </summary>
 	/// <remarks>
-	/// My primary primary motivation for this data structure is compactness. It's 
+	/// My primary primary motivation for this data structure is compactness. It's
 	/// comparable to a "counting bloom filter", in that searching for a key can
 	/// find false positives, but not false negatives, but it offers the additional
 	/// feature that one or more values can be associated with each key.
 	/// <para/>
-	/// The size per entry dependends on the size of the hashtable. This data 
-	/// structure is the most compact when its size is limited to 65536 entries and 
-	/// buckets; its overhead doubles when you exceed this limit, since "shorts" 
+	/// The size per entry dependends on the size of the hashtable. This data
+	/// structure is the most compact when its size is limited to 65536 entries and
+	/// buckets; its overhead doubles when you exceed this limit, since "shorts"
 	/// become "ints".
 	/// <para/>
 	/// The Count is allowed to exceed the Capacity, but it is not allowed to cross
 	/// a size threshold (255 or 65535). Capacity returns the number of buckets,
-	/// so if Count exceeds Capacity, it simply means there are more items than 
-	/// buckets, so there will be a larger-than-normal amount of "false positives" 
+	/// so if Count exceeds Capacity, it simply means there are more items than
+	/// buckets, so there will be a larger-than-normal amount of "false positives"
 	/// (multiple items will typically be returned from a search).
 	/// <para/>
 	/// The size requirement per entry is 2 bytes (plus sizeof(T)) for a table of
-	/// size 255 or less, 4 bytes (plus sizeof(T)) for a table of size 65535 or 
+	/// size 255 or less, 4 bytes (plus sizeof(T)) for a table of size 65535 or
 	/// less, and 8 bytes (plus sizeof(T)) for larger tables. Prime number sizes
 	/// are generally preferred for best performance.
 	/// <para/>
 	/// The memory for buckets (1-4 bytes) is allocated up-front, but other memory
-	/// is allocated on-demand. For example, if you create a new hashtable with 
+	/// is allocated on-demand. For example, if you create a new hashtable with
 	/// capacity 251 and add 50 items, 251 bytes are allocated up-front, but less
 	/// than 100 * (1+sizeof(T)) additional bytes are allocated.
 	/// <para/>
-	/// By its very nature, KeylessHashtable allows multiple values to be 
+	/// By its very nature, KeylessHashtable allows multiple values to be
 	/// associated with a single key.
 	/// <para/>
 	/// A normal hashtable could theoretically be built on top of this one by
 	/// storing the key and value together in type T.
 	/// </remarks>
-	[Serializable]
 	public abstract class KeylessHashtable<T> : IReadOnlyCollection<T>
 	{
 		public static KeylessHashtable<T> New(int numBuckets)
@@ -72,7 +71,7 @@ namespace Loyc.Collections.Impl
 		{
 			_values = EmptyArray<T>.Value;
 		}
-		
+
 		protected T[] _values;
 		protected int _firstUnused = -1; // _values[_firstUnused] is unused (-1 if _values if full)
 		protected int _count;            // Number of T used.
@@ -98,8 +97,7 @@ namespace Loyc.Collections.Impl
 
 	/// <summary>The concrete implementation of <see cref="KeylessHashtable{T}"/>.
 	/// Do not use directly; instead, call <see cref="KeylessHashtable{T}.New"/>.</summary>
-	[Serializable]
-	public class KeylessHashtable<T, Int, Math> : KeylessHashtable<T> 
+	public class KeylessHashtable<T, Int, Math> : KeylessHashtable<T>
 		where Int : struct, IConvertible
 		where Math : struct, IMath<Int>
 	{
@@ -113,7 +111,7 @@ namespace Loyc.Collections.Impl
 		public KeylessHashtable(int numBuckets)
 		{
 			CheckParam.IsInRange("numBuckets", numBuckets, 1, END);
-			
+
 			_buckets = new Int[numBuckets];
 			Clear();
 		}
@@ -132,7 +130,7 @@ namespace Loyc.Collections.Impl
 					int newCapacity = InternalList.NextLargerSize(_count, END);
 					_values = InternalList.CopyToNewArray(_values, _values.Length, newCapacity);
 					_firstUnused = _count;
-					
+
 					// Enlarge _next
 					int oldCapacity = _next.Length;
 					_next = InternalList.CopyToNewArray(_next, _next.Length, newCapacity);
@@ -285,13 +283,13 @@ namespace Loyc.Collections.Impl
 			{
 				int k = r.Next(maxCount * 2);
 				ht.Add(k, k);
-				
+
 				ht2.TryGetValue(k, out count);
 				ht2[k] = count + 1;
 				Assert.AreEqual(i + 1, ht.Count);
 			}
-			
-			// Make sure that we can retrieve all the values that we added through 
+
+			// Make sure that we can retrieve all the values that we added through
 			// the Find() method.
 			int falsePositives = 0;
 			foreach (var kvp in ht2)
@@ -305,18 +303,18 @@ namespace Loyc.Collections.Impl
 						falsePositives++;
 				Assert.AreEqual(kvp.Value, found);
 			}
-			
+
 			// TODO: analyze carefully to find a realistic upper bound on false positives
 			// The limit here is just a guess.
 			Assert.Less(falsePositives, 2 * maxCount * maxCount / buckets);
 
-			// Make sure that we can retrieve all the values that we added through 
+			// Make sure that we can retrieve all the values that we added through
 			// the main iterator.
 			count = 0;
 			for (var it = ht.GetEnumerator(); it.MoveNext(); count++)
 				Assert.That(ht2.ContainsKey(it.Current));
 			Assert.AreEqual(ht.Count, count);
-				
+
 			// Delete all the items using both available methods
 			foreach (var kvp in ht2)
 			{

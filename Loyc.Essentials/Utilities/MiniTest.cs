@@ -1,18 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using Loyc.Math;
 using System.Collections;
-using Loyc.Threading;
+using System.Reflection;
 using System.Text;
+using Loyc.Threading;
 
 namespace Loyc.MiniTest
 {
 	#region Attributes
 
-	/// <summary>Identifies a class that contains unit tests, or methods that 
-	/// return other tests or test fixtures.</summary> 
+	/// <summary>Identifies a class that contains unit tests, or methods that
+	/// return other tests or test fixtures.</summary>
 	/// <remarks>
-	/// The MiniTest runner will ignore any class that does not have the 
+	/// The MiniTest runner will ignore any class that does not have the
 	/// [TestFixture] attribute and is not named according to a recognized pattern,
 	/// such as My_TestFixture.
 	/// </remarks>
@@ -36,19 +35,19 @@ namespace Loyc.MiniTest
 	}
 
 	/// <summary>Identifies a method that contains a unit test, or that
-	/// returns other tests or test fixtures.</summary> 
+	/// returns other tests or test fixtures.</summary>
 	/// <remarks>
 	/// In addition to standard tests (which return void), the MiniTest runner
 	/// is planned to support [Test] methods with other return values:
 	/// <ul>
 	/// <li>A test can return a string, which describes the result of the test.</li>
-	/// <li>A test can return an Action (or any other delegate that takes no 
-	/// arguments), which is treated as a sub-test and executed. Sub-tests are 
+	/// <li>A test can return an Action (or any other delegate that takes no
+	/// arguments), which is treated as a sub-test and executed. Sub-tests are
 	/// run without set-up or tear-down steps.</li>
-	/// <li>A test can return an object that does not implement IEnumerable, which 
+	/// <li>A test can return an object that does not implement IEnumerable, which
 	/// the test runner will assume is a test fixture. The object will be scanned
 	/// for test methods to execute.</li>
-	/// <li>A test can return an object that implements IEnumerable, which the 
+	/// <li>A test can return an object that implements IEnumerable, which the
 	/// test runner will scan to find tests and test fixtures to execute.</li>
 	/// <li>A test can return a KeyValuePair(TKey, TValue) or DictionaryEntry.
 	/// In that case pair's Value is processed as though it were the return value,
@@ -57,21 +56,21 @@ namespace Loyc.MiniTest
 	/// These features give the MiniTest runner powerful capabilities while keeping
 	/// it simple. However, please note that NUnit doesn't offer this feature.
 	/// <para/>
-	/// MiniTest allows tests to be static methods if they are inside a test 
-	/// fixture. However, when test objects are returned from a [Test] method, 
+	/// MiniTest allows tests to be static methods if they are inside a test
+	/// fixture. However, when test objects are returned from a [Test] method,
 	/// they are not scanned for static methods.
 	/// <para/>
-	/// If multiple tests return the same test fixture instance, directly or 
-	/// indirectly, MiniTest runner will avoid running the test fixture instance 
-	/// multiple times, but it can show the results at multiple places in the 
-	/// result tree, which can be used to construct multiple "views" of the test 
+	/// If multiple tests return the same test fixture instance, directly or
+	/// indirectly, MiniTest runner will avoid running the test fixture instance
+	/// multiple times, but it can show the results at multiple places in the
+	/// result tree, which can be used to construct multiple "views" of the test
 	/// results.  However, if a test fixture is nested within itself, the nested
 	/// instance is excluded from the result tree.
 	/// <para/>
 	/// If a TestFixture class contains only a single "test suite" method (a
-	/// method that returns tests), MiniTest merges that method with the class in 
-	/// the tree view. For example, if the class "MyTests" has a single method 
-	/// "GetTests", the tree view will use one line for "MyTests.GetTests" rather 
+	/// method that returns tests), MiniTest merges that method with the class in
+	/// the tree view. For example, if the class "MyTests" has a single method
+	/// "GetTests", the tree view will use one line for "MyTests.GetTests" rather
 	/// than separating out GetTests as a child of MyTests.
 	/// </remarks>
 	/// <example>
@@ -112,14 +111,14 @@ namespace Loyc.MiniTest
 			set { _maxParallelThreads = value; }
 		}
 
-		/// <summary>Setting this property is used to indicate that the test is 
-		/// known to fail. It is used to mark tests that should be fixed eventually, 
+		/// <summary>Setting this property is used to indicate that the test is
+		/// known to fail. It is used to mark tests that should be fixed eventually,
 		/// but will not be fixed immediately.</summary>
 		/// <remarks>If you are new to a codebase, it helps to be able to tell the
-		/// difference between new problems that need to be investigated and 
-		/// addressed immediately, and old problems that have been placed on the 
+		/// difference between new problems that need to be investigated and
+		/// addressed immediately, and old problems that have been placed on the
 		/// backburner to be fixed "someday", or feature requests that have not
-		/// yet been addressed. Setting this property suggests that a failure may 
+		/// yet been addressed. Setting this property suggests that a failure may
 		/// be low-priority and may be an old issue.</remarks>
 		public object Fails
 		{
@@ -156,8 +155,8 @@ namespace Loyc.MiniTest
 		/// run the test. The test runner will run the test repeatedly until
 		/// the total time elapsed exceeds this number.</summary>
 		public int? RepeatForMs { get; set; }
-		
-		/// <summary>Gets or sets the recommended minimum number of times to run 
+
+		/// <summary>Gets or sets the recommended minimum number of times to run
 		/// the benchmark in order to get an average. If this property is left
 		/// at the default value (null), the test runner can decide.</summary>
 		/// <remarks>If RepeatForMs is also specified, the number of trials can
@@ -179,7 +178,6 @@ namespace Loyc.MiniTest
 	#endregion
 
 	/// <summary>An exception thrown when a method of <see cref="Assert"/> fails.</summary>
-	[Serializable]
 	public class TestException : Exception
 	{
 		public TestException(string message) : base(message) { }
@@ -194,7 +192,7 @@ namespace Loyc.MiniTest
 		public AssertionException(string message) : base(message) { }
 		public AssertionException(string message, Exception inner) : base(message, inner) { }
 	}
-	
+
 	/// <summary>Thrown by <see cref="Assert.Ignore()"/>.</summary>
 	public class IgnoreException : TestException
 	{
@@ -215,7 +213,7 @@ namespace Loyc.MiniTest
 		public SuccessException(string message) : base(message) { }
 		public SuccessException(string message, Exception inner) : base(message, inner) { }
 	}
-	
+
 
 	/// <summary>
 	/// The Assert class contains a collection of static methods that mirror
@@ -224,21 +222,21 @@ namespace Loyc.MiniTest
 	/// <remarks>
 	/// WORK IN PROGRESS. TEST RUNNER IS NOT FINISHED YET.
 	/// <para/>
-	/// This class is mostly a drop-in replacement for "old-style" NUnit tests, 
+	/// This class is mostly a drop-in replacement for "old-style" NUnit tests,
 	/// i.e. those that do not use constraint classes or the "Is" class.
 	/// <para/>
-	/// Some methods were dropped to keep this class small. Use the full NUnit 
+	/// Some methods were dropped to keep this class small. Use the full NUnit
 	/// framework if the remaining methods are not sufficient for you.
 	/// <ul>
-	/// <li>When the same assertion was known by multiple similar names (e.g. 
-	/// True and IsTrue), I kept only one of the names. However, I did keep 
+	/// <li>When the same assertion was known by multiple similar names (e.g.
+	/// True and IsTrue), I kept only one of the names. However, I did keep
 	/// That(), Expect() and IsTrue() even though they all do the same thing.</li>
-	/// <li>Some less-common overloads that take a format string and arguments 
+	/// <li>Some less-common overloads that take a format string and arguments
 	/// were dropped.</li>
 	/// <li>Some overloads were dropped when the compiler can automatically
-	/// select a different overload instead. In particular, most overloads that 
+	/// select a different overload instead. In particular, most overloads that
 	/// take a message string (without arguments) were dropped. Code that relied
-	/// on those overloads will still compile, because the compiler will 
+	/// on those overloads will still compile, because the compiler will
 	/// construct an empty argument list and call the overload that takes a
 	/// variable argument list.</li>
 	/// </ul>
@@ -246,7 +244,7 @@ namespace Loyc.MiniTest
 	public class Assert
 	{
 		/// <summary>
-		/// You may find it useful to derive a test fixture from Assert so that 
+		/// You may find it useful to derive a test fixture from Assert so that
 		/// you do not need to prefix every test with "Assert."
 		/// </summary>
 		protected Assert() { }
@@ -282,14 +280,14 @@ namespace Loyc.MiniTest
 			throw new TestException(msg);
 		}
 
-		/// <summary>Fails a test via StopTestHandler, which, by default, 
+		/// <summary>Fails a test via StopTestHandler, which, by default,
 		/// throws an AssertionException.</summary>
 		public static void Fail(string format, params object[] args)
 		{
 			StopTestHandler.Value(StopReason.Fail, format, args);
 		}
 
-		/// <summary>Fails a test by invoking <see cref="StopTestHandler"/>.Value(), 
+		/// <summary>Fails a test by invoking <see cref="StopTestHandler"/>.Value(),
 		/// which, by default, throws an AssertionException.</summary>
 		public static void Fail(string message)
 		{
@@ -303,15 +301,15 @@ namespace Loyc.MiniTest
 			StopTestHandler.Value(StopReason.Ignore, format, args);
 		}
 
-		/// <summary>Stops a test via StopTestHandler, which, by default, throws 
-		/// an InconclusiveException. This causes the test to be reported as 
+		/// <summary>Stops a test via StopTestHandler, which, by default, throws
+		/// an InconclusiveException. This causes the test to be reported as
 		/// inconclusive.</summary>
 		public static void Inconclusive(string format, params object[] args)
 		{
 			StopTestHandler.Value(StopReason.Inconclusive, format, args);
 		}
 
-		/// <summary>Stops a test via StopTestHandler, which, by default, 
+		/// <summary>Stops a test via StopTestHandler, which, by default,
 		/// throws a SuccessException.</summary>
 		public static void Success(string format, params object[] args)
 		{
@@ -406,7 +404,7 @@ namespace Loyc.MiniTest
 				int a_i = i, b_i = i, maxlen = System.Math.Max(a.Length, b.Length);
 				msg.AppendFormat("  Expected: {0}\n", GetQuotedString(ref a, ref a_i, maxlen));
 				msg.AppendFormat("  But was:  {0}\n", GetQuotedString(ref b, ref b_i, maxlen));
-				
+
 				int TailLength = "-----------".Length;
 				var prefix = b.Left(b_i);
 				int i_adjusted = G.EscapeCStyle(prefix, EscapeC.Default, '"').Length;
@@ -523,7 +521,7 @@ namespace Loyc.MiniTest
 		{
 			if (!condition) Fail(message);
 		}
-		
+
 		/// <summary>Calls Fail() if condition is false.</summary>
 		public static void That(bool condition)
 		{
@@ -548,14 +546,14 @@ namespace Loyc.MiniTest
 			try {
 				code();
 			} catch (Exception ex) {
-				if (expectedExceptionType.IsAssignableFrom(ex.GetType()))
+				if (expectedExceptionType.GetTypeInfo().IsAssignableFrom( ex.GetType().GetTypeInfo() ))
 					return ex;
 				Fail(message, args, "Throws(): Expected {0}, got {1}", expectedExceptionType.Name, ex.GetType().Name);
 			}
 			Fail(message, args, "Throws(): Expected {0}, but no exception was thrown", expectedExceptionType.Name);
 			return null; // normally unreachable
 		}
-		
+
 		public static Exception Throws(Type expectedExceptionType, Action code)
 		{
 			return Throws(expectedExceptionType, code, null, null);
@@ -615,7 +613,7 @@ namespace Loyc.MiniTest
 
 		public static void IsTrue(bool condition, string message, params object[] args)
 		{
-			if (!condition) 
+			if (!condition)
 				Fail(message, args, "IsTrue: condition is unexpectedly false");
 		}
 		public static void IsTrue(bool condition)
@@ -624,7 +622,7 @@ namespace Loyc.MiniTest
 		}
 		public static void IsFalse(bool condition, string message, params object[] args)
 		{
-			if (condition) 
+			if (condition)
 				Fail(message, args, "IsFalse: condition is unexpectedly true");
 		}
 		public static void IsFalse(bool condition)
@@ -633,7 +631,7 @@ namespace Loyc.MiniTest
 		}
 		public static void IsNotNull(object anObject, string message, params object[] args)
 		{
-			if (anObject == null) 
+			if (anObject == null)
 				Fail(message, args, "IsNotNull: object is null");
 		}
 		public static void IsNotNull(object anObject)
@@ -642,7 +640,7 @@ namespace Loyc.MiniTest
 		}
 		public static void IsNull(object anObject, string message, params object[] args)
 		{
-			if (anObject != null) 
+			if (anObject != null)
 				Fail(message, args, "IsNull: object is not null");
 		}
 		public static void IsNull(object anObject)
@@ -661,7 +659,7 @@ namespace Loyc.MiniTest
 		}
 		public static void IsEmpty(System.Collections.IEnumerable collection)
 		{
-			if (collection == null) 
+			if (collection == null)
 				Fail ("IsEmpty: collection is null");
 			if (collection.GetEnumerator().MoveNext())
 				Fail("IsEmpty: collection is not empty");
@@ -922,8 +920,8 @@ namespace Loyc.MiniTest
 		{
 			GreaterOrEqual(arg1, arg2, null, null);
 		}
-	
-		
+
+
 		public static void LessOrEqual(long arg1, long arg2, string message, params object[] args)
 		{
 			if (!(arg1 <= arg2))
@@ -955,7 +953,7 @@ namespace Loyc.MiniTest
 		{
 			LessOrEqual(arg1, arg2, null, null);
 		}
-		
+
 
 		/// <summary>
 		/// Asserts that an object is contained in a list.

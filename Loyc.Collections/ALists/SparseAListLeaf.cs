@@ -9,13 +9,12 @@ namespace Loyc.Collections.Impl
 	/// <summary>Internal implementation class. Leaf node of <see cref="SparseAList{T}"/>.</summary>
 	/// <remarks>This node consists of a certain number of virtual slots (_totalCount)
 	/// and a certain number of real slots (_list.Count). Node splitting/joining
-	/// behavior is based entirely on the number of real slots. There can be any 
-	/// number of empty spaces anywhere in the list. If there are empty spaces at 
-	/// the beginning, <c>_list[0].Offset > 0</c>; if there are empty spaces at the 
-	/// end, <c>_totalCount > _list.Last.Offset + 1</c>. <c>_list.Count == 0</c> 
-	/// only if the entire list consists of empty space and there is only a single 
+	/// behavior is based entirely on the number of real slots. There can be any
+	/// number of empty spaces anywhere in the list. If there are empty spaces at
+	/// the beginning, <c>_list[0].Offset > 0</c>; if there are empty spaces at the
+	/// end, <c>_totalCount > _list.Last.Offset + 1</c>. <c>_list.Count == 0</c>
+	/// only if the entire list consists of empty space and there is only a single
 	/// node.</remarks>
-	[Serializable]
 	public class SparseAListLeaf<T> : AListNode<int, T>
 	{
 		[DebuggerDisplay("Offset = {Offset}, Item = {Item}")]
@@ -129,7 +128,7 @@ namespace Loyc.Collections.Impl
 				return false;
 			int i1, i2;
 			i1 = GetSectionRange(index, count, out i2);
-	
+
 			_list.RemoveRange(i1, i2 - i1);
 			AdjustOffsetsStartingAt(i1, ref _list, -(int)count);
 			_totalCount -= count;
@@ -148,7 +147,7 @@ namespace Loyc.Collections.Impl
 			var right = (SparseAListLeaf<T>)rightSibling;
 			if (_isFrozen || right._isFrozen)
 				return 0;
-			
+
 			uint amount;
 			if (right._list.IsEmpty) { // oops, just take the remaining empty space
 				amount = right._totalCount;
@@ -275,10 +274,10 @@ namespace Loyc.Collections.Impl
 				uint startAt = (uint)(index + op.SourceIndex);
 				i1 = GetSectionRange(startAt, leftToReplace, out i2);
 				_list.RemoveRange(i1, i2 - i1);
-				
+
 				uint amtReplaced = System.Math.Min(leftToReplace, _totalCount - startAt);
 				op.SourceIndex += (int)amtReplaced;
-				
+
 				splitLeft = splitRight = null;
 				if (IsUndersized)
 					splitLeft = this;
@@ -286,9 +285,9 @@ namespace Loyc.Collections.Impl
 				return 0;
 			}
 
-			// Currently there is only one other replacement operation exposed on 
-			// SparseAList, namely changing the value of a single item. I'll 
-			// include code for changing multiple items at once, but not optimize 
+			// Currently there is only one other replacement operation exposed on
+			// SparseAList, namely changing the value of a single item. I'll
+			// include code for changing multiple items at once, but not optimize
 			// that case. And no sparse support.
 			Debug.Assert(op.SparseSource == null);
 
@@ -327,7 +326,7 @@ namespace Loyc.Collections.Impl
 		private int DoInsert(ref AListSparseOperation<T> op, int index0, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
 		{
 			Debug.Assert(_totalCount + op.SourceCount >= _totalCount); // caller ensures list size does not overflow
-			
+
 			if (op.WriteEmpty)
 			{
 				// SourceIndex will be 0 because inserting empty space always finishes on the first try.
@@ -354,7 +353,7 @@ namespace Loyc.Collections.Impl
 				// Special case: insert a single item
 				Debug.Assert(op.SourceCount == 1);
 				_list.AutoRaiseCapacity(1, _maxNodeSize);
-				
+
 				_list.Insert(i, new Entry(index, op.Item));
 				AdjustOffsetsStartingAt(i + 1, ref _list, 1);
 				_totalCount++;

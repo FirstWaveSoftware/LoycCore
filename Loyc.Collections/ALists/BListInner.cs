@@ -7,7 +7,6 @@
 	using System.Diagnostics;
 
 	/// <summary>Internal implementation class. Shared code of all BList internal nodes.</summary>
-	[Serializable]
 	internal abstract class BListInner<K, T> : AListInnerBase<K, T>
 	{
 		#region Constructors and boilerplate
@@ -22,7 +21,7 @@
 			_highestKey = new K[_children.Length-1];
 			_highestKey[0] = GetHighestKey(left);
 		}
-		protected BListInner(BListInner<K, T> original, int localIndex, int localCount, uint baseIndex, int maxNodeSize) 
+		protected BListInner(BListInner<K, T> original, int localIndex, int localCount, uint baseIndex, int maxNodeSize)
 			: base(original, localIndex, localCount, baseIndex, maxNodeSize)
 		{
 			_highestKey = new K[_children.Length - 1];
@@ -53,9 +52,9 @@
 
 		/// <summary>Performs a binary search for a key.</summary>
 		/// <remarks>If the key matches one of the values of _aggregateKey, this
-		/// method returns the index of the lowest node that contains that key so 
-		/// that non-add operations work correctly. If we were concerned ONLY with 
-		/// plain Add operations, it would be acceptable to return index i+1 
+		/// method returns the index of the lowest node that contains that key so
+		/// that non-add operations work correctly. If we were concerned ONLY with
+		/// plain Add operations, it would be acceptable to return index i+1
 		/// when key equals _aggregateKey[i] (and perhaps preferable, because it
 		/// guarantees that _aggregateKey[i] won't have to be updated).</remarks>
 		public int BinarySearchK(K key, Func<K,K,int> compare)
@@ -121,7 +120,7 @@
 				else {
 					// Node is undersized and/or highest key changed
 					bool flagParent = false;
-					
+
 					if (op.AggregateChanged != 0)
 					{
 						if (i < _childCount - 1) {
@@ -197,7 +196,7 @@
 		{
 			// Update _highestKey. base.HandleChildSplit will call LLInsert
 			// which will update _highestKey for the newly inserted right child,
-			// but we must manually update the left child at _highestKey[i], 
+			// but we must manually update the left child at _highestKey[i],
 			// unless i == _childCount-1.
 			if (i < _childCount-1)
 				_highestKey[i] = GetHighestKey(splitLeft);
@@ -217,7 +216,7 @@
 					highest = GetHighestKey(_children[_childCount - 1].Node);
 				} else
 					highest = GetHighestKey(child);
-				
+
 				_highestKey = InternalList.Insert(i2, highest, _highestKey, _childCount - 1);
 			}
 
@@ -238,7 +237,7 @@
 			base.AssertValid();
 			Debug.Assert(_highestKey.Length + 1 >= _childCount);
 
-			if (typeof(T).TypeHandle.Value == typeof(K).TypeHandle.Value)
+			if (typeof(T) == typeof(K))  // Types have reference identity and equality
 			{
 				// Verify values of _highestKey
 				for (int i = 0; i < _childCount - 1; i++)

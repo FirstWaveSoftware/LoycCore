@@ -1,21 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Reflection;
 
 namespace Loyc
 {
-	/// <summary>.NET Framework reflection doesn't offer complete type names for 
-	/// generic types such as "List&lt;int>" (the <c>Type.Name</c> value of that class is 
-	/// "List`1"). <see cref="Get"/> fills in the gap, and also saves the 
+	/// <summary>.NET Framework reflection doesn't offer complete type names for
+	/// generic types such as "List&lt;int>" (the <c>Type.Name</c> value of that class is
+	/// "List`1"). <see cref="Get"/> fills in the gap, and also saves the
 	/// computed name for fast repeated lookups.</summary>
 	public static class MemoizedTypeName
 	{
 		static Dictionary<Type, string> _shortNames = new Dictionary<Type, string>();
 
-		/// <summary>Computes a short language-agnostic name for a type, including 
-		/// generic parameters, e.g. GenericName(typeof(int)) is "Int32"; 
-		/// GenericName(typeof(Dictionary&lt;int, string>)) is 
+		/// <summary>Computes a short language-agnostic name for a type, including
+		/// generic parameters, e.g. GenericName(typeof(int)) is "Int32";
+		/// GenericName(typeof(Dictionary&lt;int, string>)) is
 		/// "Dictionary&lt;Int32, String>".</summary>
 		/// <param name="type">Type whose name you want</param>
 		/// <returns>Name with generic parameters, as explained in the summary.</returns>
@@ -30,7 +30,7 @@ namespace Loyc
 			{
 				if (!_shortNames.TryGetValue(type, out name))
 				{
-					if (type.IsGenericType)
+					if (type.GetTypeInfo().IsGenericType)
 						_shortNames[type] = name = ComputeGenericName(type);
 					else
 						name = type.Name;
@@ -43,7 +43,7 @@ namespace Loyc
 		internal static string ComputeGenericName(Type type)
 		{
 			string result = type.Name;
-			if (type.IsGenericType)
+			if (type.GetTypeInfo().IsGenericType)
 			{
 				// remove genric indication (e.g. `1)
 				result = result.Substring(0, result.LastIndexOf('`'));
@@ -66,7 +66,7 @@ namespace Loyc
 
 	/// <summary><c>MemoizedTypeName&lt;T>.Get()</c> is an alternative to
 	/// <see cref="MemoizedTypeName.Get"/>(typeof(T)).</summary>
-	/// <remarks>This class is faster for getting the same name repeatedly, but 
+	/// <remarks>This class is faster for getting the same name repeatedly, but
 	/// demands more memory and initialization overhead from the CLR.</remarks>
 	public static class MemoizedTypeName<T>
 	{

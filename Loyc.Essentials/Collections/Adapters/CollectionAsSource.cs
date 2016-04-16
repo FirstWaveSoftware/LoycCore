@@ -10,7 +10,7 @@ namespace Loyc.Collections
 	{
 		/// <summary>Treats any ICollection{T} object to IReadOnlyCollection{T}.</summary>
 		/// <remarks>This method is named "AsReadOnly" and not "ToReadOnly" because,
-		/// in contrast to methods like ToArray(), and ToList() it does not make a 
+		/// in contrast to methods like ToArray(), and ToList() it does not make a
 		/// copy of the sequence, although it does create a new wrapper object.</remarks>
 		public static IReadOnlyCollection<T> AsReadOnly<T>(this ICollection<T> c)
 		{
@@ -21,9 +21,8 @@ namespace Loyc.Collections
 		}
 	}
 
-	/// <summary>Adapter: a read-only wrapper that implements ICollection(T) and IReadOnlyCollection(T), 
+	/// <summary>Adapter: a read-only wrapper that implements ICollection(T) and IReadOnlyCollection(T),
 	/// returned from <see cref="LCExt.AsReadOnly{T}"/>.</summary>
-	[Serializable]
 	public sealed class CollectionAsReadOnly<T> : WrapperBase<ICollection<T>>, ICollectionAndReadOnly<T>
 	{
 		public CollectionAsReadOnly(ICollection<T> obj) : base(obj) { }

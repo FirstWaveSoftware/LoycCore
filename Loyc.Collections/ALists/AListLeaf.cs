@@ -6,7 +6,6 @@
 	using System.Diagnostics;
 
 	/// <summary>Internal implementation class. Shared code of non-sparse AList leaf nodes.</summary>
-	[Serializable]
 	public abstract class AListLeaf<K, T> : AListNode<K, T>
 	{
 		public const int DefaultMaxNodeSize = 64;
@@ -133,7 +132,7 @@
 		{
 			return _list.IndexOf(item, startIndex);
 		}
-		
+
 		public override uint GetImmutableCount(bool _)
 		{
 			return IsFrozen ? (uint)LocalCount : 0;
@@ -144,7 +143,6 @@
 	/// Leaf node of <see cref="AList{T}"/>.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	[Serializable]
 	internal class AListLeaf<T> : AListLeaf<int, T>
 	{
 		public AListLeaf(ushort maxNodeSize) : base(maxNodeSize) { }
@@ -183,8 +181,8 @@
 				int divAt = _list.Count >> 1;
 				var left = new AListLeaf<T>(_maxNodeSize, _list.CopySection(0, divAt));
 				var right = new AListLeaf<T>(_maxNodeSize, _list.CopySection(divAt, _list.Count - divAt));
-				
-				// Note: don't pass tob to left.Insert() or right.Insert() because 
+
+				// Note: don't pass tob to left.Insert() or right.Insert() because
 				// parent node will send required notifications to tob instead.
 				if (index <= divAt)
 					left.Insert(index, item, out splitRight, null);

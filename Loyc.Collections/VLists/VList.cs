@@ -1,14 +1,14 @@
 /*
 	VList processing library: Copyright 2009 by David Piepgrass
 
-	This library is free software: you can redistribute it and/or modify it 
-	it under the terms of the GNU Lesser General Public License as published 
-	by the Free Software Foundation, either version 3 of the License, or (at 
+	This library is free software: you can redistribute it and/or modify it
+	it under the terms of the GNU Lesser General Public License as published
+	by the Free Software Foundation, either version 3 of the License, or (at
 	your option) any later version. It is provided without ANY warranties.
-	Please note that it is fairly complex. Therefore, it may contain bugs 
+	Please note that it is fairly complex. Therefore, it may contain bugs
 	despite my best efforts to test it.
 
-	If you did not receive a copy of the License with this library, you can 
+	If you did not receive a copy of the License with this library, you can
 	find it at http://www.gnu.org/licenses/
 */
 using System;
@@ -27,25 +27,25 @@ namespace Loyc.Collections
 	/// An <a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">article</a>
 	/// is available online about the VList data types.
 	/// <para/>
-	/// The VList is a persistent list data structure described in Phil Bagwell's 
+	/// The VList is a persistent list data structure described in Phil Bagwell's
 	/// 2002 paper "Fast Functional Lists, Hash-Lists, Deques and Variable Length
 	/// Arrays". Originally, this type was called RVList because it works in the
 	/// reverse order to the original VList type: new items are normally added at
 	/// the <i>beginning</i> of a VList, which is normal in functional languages,
 	/// but <i>this</i> VList acts like a normal .NET list, so it is optimized for
 	/// new items to be added at the end. The name "RVList" is ugly, though, since
-	/// it misleadingly appears to be related to Recreational Vehicles. So as 
+	/// it misleadingly appears to be related to Recreational Vehicles. So as
 	/// of LeMP 1.5, it's called simply VList.
 	/// <para/>
 	/// In contrast, the <see cref="FVList{T}"/> type acts like the original VList;
 	/// its Add method puts new items at the beginning (index 0).
 	/// <para/>
-	/// See the remarks of <see cref="VListBlock{T}"/> for a more detailed 
+	/// See the remarks of <see cref="VListBlock{T}"/> for a more detailed
 	/// description.
 	/// </remarks>
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>)),
 	 DebuggerDisplay("Count = {Count}")]
-	public struct VList<T> : IListAndListSource<T>, ICloneable<VList<T>>, ICloneable
+	public struct VList<T> : IListAndListSource<T>, ICloneable<VList<T>>
 	{
 		internal VListBlock<T> _block;
 		internal int _localCount;
@@ -93,7 +93,7 @@ namespace Loyc.Collections
 		{
 			return VListBlock<T>.SubList(_block, _localCount, offset).ToVList();
 		}
-		/// <summary>Returns a list without the last item. If the list is empty, 
+		/// <summary>Returns a list without the last item. If the list is empty,
 		/// an empty list is retured.</summary>
 		public VList<T> Tail
 		{
@@ -257,9 +257,9 @@ namespace Loyc.Collections
 
 		/// <summary>Gets the number of blocks used by this list.</summary>
 		/// <remarks>You might look at this property when optimizing your program,
-		/// because the runtime of some operations increases as the chain length 
+		/// because the runtime of some operations increases as the chain length
 		/// increases. This property runs in O(BlockChainLength) time. Ideally,
-		/// BlockChainLength is proportional to log_2(Count), but certain VList 
+		/// BlockChainLength is proportional to log_2(Count), but certain VList
 		/// usage patterns can produce long chains.</remarks>
 		public int BlockChainLength
 		{
@@ -323,7 +323,7 @@ namespace Loyc.Collections
 				this = _block.ReplaceAt(_localCount, value, Count - 1 - index).ToVList();
 			}
 		}
-		/// <summary>Gets an item from the list at the specified index; returns 
+		/// <summary>Gets an item from the list at the specified index; returns
 		/// defaultValue if the index is not valid.</summary>
 		public T this[int index, T defaultValue]
 		{
@@ -373,7 +373,7 @@ namespace Loyc.Collections
 				Debug.Assert((_localCount == 0) == (_block == null));
 				if (_block == null)
 					return 0;
-				return _localCount + _block.PriorCount; 
+				return _localCount + _block.PriorCount;
 			}
 		}
 
@@ -398,10 +398,10 @@ namespace Loyc.Collections
         /// <summary>Enumerates through a VList from index 0 up to index Count-1.
         /// </summary><remarks>
         /// Normally, enumerating the list takes O(Count + log(Count)^2) = O(Count)
-		/// time. However, if the list's block chain does not increase in size 
-		/// exponentially (due to the way that the list has been modified in the 
+		/// time. However, if the list's block chain does not increase in size
+		/// exponentially (due to the way that the list has been modified in the
 		/// past), the search can have worse performance; the worst case is O(n^2),
-		/// but this is unlikely. FVList's Enumerator doesn't have this problem 
+		/// but this is unlikely. FVList's Enumerator doesn't have this problem
 		/// because it enumerates in the other direction.</remarks>
 		public struct Enumerator : IEnumerator<T>
 		{
@@ -490,13 +490,12 @@ namespace Loyc.Collections
 
 		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
 		public Slice_<T> Slice(int start, int count = int.MaxValue) { return new Slice_<T>(this, start, count); }
-		
-		#endregion 
+
+		#endregion
 
 		#region ICloneable Members
 
 		public VList<T> Clone() { return this; }
-		object ICloneable.Clone() { return this; }
 
 		#endregion
 
@@ -510,7 +509,7 @@ namespace Loyc.Collections
         /// structure is not modified.</returns>
 		/// <remarks>
 		/// If the predicate keeps the first N items it is passed, those N items are
-		/// typically not copied, but shared between the existing list and the new 
+		/// typically not copied, but shared between the existing list and the new
 		/// one.
 		/// </remarks>
 		public VList<T> Where(Predicate<T> keep)
@@ -527,8 +526,8 @@ namespace Loyc.Collections
 		/// <returns>The list after filtering has been applied. The original list
 		/// structure is not modified.</returns>
 		/// <remarks>
-		/// This is a smart function. If the filter does not modify the first N 
-		/// items it is passed, those N items are typically not copied, but shared 
+		/// This is a smart function. If the filter does not modify the first N
+		/// items it is passed, those N items are typically not copied, but shared
 		/// between the existing list and the new one.
 		/// </remarks>
 		public VList<T> WhereSelect(Func<T,Maybe<T>> filter)
@@ -541,7 +540,7 @@ namespace Loyc.Collections
 
 		/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
-		/// <returns>The list after the map function is applied to each item. The 
+		/// <returns>The list after the map function is applied to each item. The
 		/// original VList structure is not modified.</returns>
 		/// <remarks>
 		/// This method is called "Smart" because of what happens if the map
@@ -560,7 +559,7 @@ namespace Loyc.Collections
 
 		/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
-		/// <returns>The list after the map function is applied to each item. The 
+		/// <returns>The list after the map function is applied to each item. The
 		/// original VList structure is not modified.</returns>
 		public VList<Out> Select<Out>(Func<T, Out> map)
 		{
@@ -824,7 +823,7 @@ namespace Loyc.Collections
 			ExpectList(b, 1);
 			b.Remove(a.Last);
 			Assert.That(b.IsEmpty);
-			
+
 			AssertThrows<InvalidOperationException>(delegate() { a.NextIn(b); });
 		}
 
@@ -863,7 +862,7 @@ namespace Loyc.Collections
 			AssertThrows<InvalidOperationException>(delegate() { list2.AddRange(list2.WithoutLast(1), list2); });
 			AssertThrows<InvalidOperationException>(delegate() { list2.AddRange(VList<int>.Empty, list2); });
 		}
-		
+
 		[Test]
 		public void TestSublistProblem()
 		{
@@ -891,7 +890,7 @@ namespace Loyc.Collections
 			// garbage-collected if it is no longer in use. But a side effect is
 			// that subList no longer appears to be a part of list. The fix is to
 			// notice that list (block {7, 9}) and subList (block that contains {7})
-			// have the same prior list, {3, 4, 5, 6}, and that the remaining 
+			// have the same prior list, {3, 4, 5, 6}, and that the remaining
 			// item(s) in subList (just one item, {7}, in this case) are also
 			// present in list.
 			list = subList;
@@ -913,13 +912,13 @@ namespace Loyc.Collections
 			    return (i % 2) == 1 ? XfAction.Keep : XfAction.Drop;
 			});
 			ExpectList(output, 2, 13, 8);
-			
+
 			output = list.Transform((int i, ref int n) =>
 			{   // Keep odd numbers
 			    return (n % 2) != 0 ? XfAction.Keep : XfAction.Drop;
 			});
 			ExpectList(output, -1, 13, 5, 9);
-			
+
 			output = list.Transform((int i, ref int n) =>
 			{   // Keep and square all odd numbers
 			    if ((n % 2) != 0) {
@@ -929,7 +928,7 @@ namespace Loyc.Collections
 			        return XfAction.Drop;
 			});
 			ExpectList(output, 1, 169, 25, 81);
-			
+
 			output = list.Transform((int i, ref int n) =>
 			{   // Increase each item by its index
 			    n += i;
@@ -945,7 +944,7 @@ namespace Loyc.Collections
 			ExpectList(output, 1, 1, 2, 2, 3, 3);
 
 			output = list.Transform(delegate(int i, ref int n) {
-				if (i >= 0) 
+				if (i >= 0)
 				 return XfAction.Repeat;
 				n *= 10;
 				return XfAction.Change;

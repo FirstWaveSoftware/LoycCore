@@ -3,7 +3,7 @@
  * User: Pook
  * Date: 4/12/2011
  * Time: 9:15 PM
- * 
+ *
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
 namespace Loyc.Collections.Impl
@@ -14,42 +14,42 @@ namespace Loyc.Collections.Impl
 	using Loyc.Math;
 	using System.Runtime.CompilerServices;
 
-	/// <summary>A compact auto-enlarging deque structure that is intended to be 
+	/// <summary>A compact auto-enlarging deque structure that is intended to be
 	/// used within other data structures. It should only be used internally in
 	/// "private" or "protected" members of low-level code. In most cases, you
 	/// should use <see cref="DList{T}"/> instead.
 	/// </summary>
 	/// <remarks>
 	/// This type is implemented with what is commonly called a "circular buffer".
-	/// There is a single array plus a "start index" and a count. The array may or 
+	/// There is a single array plus a "start index" and a count. The array may or
 	/// may not be divided into two "halves", depending on the circumstances.
 	/// The first element of the DList (returned from this[0] and from the
-	/// First property) is located at the "start index" of the array; and if the 
-	/// start index + count is greater than the array size, then the end of the 
+	/// First property) is located at the "start index" of the array; and if the
+	/// start index + count is greater than the array size, then the end of the
 	/// DList wraps around to the beginning of the array.
 	/// <para/>
-	/// InternalDeque is a struct, not a class, in order to save memory; and for 
-	/// maximum performance, it asserts rather than throwing an exception 
+	/// InternalDeque is a struct, not a class, in order to save memory; and for
+	/// maximum performance, it asserts rather than throwing an exception
 	/// when an incorrect array index is used (the one exception is the iterator,
-	/// which throws in case the collection is modified during enumeration; this 
-	/// is for the sake of <see cref="DList{T}"/>.) For these and other reasons, 
-	/// one should not expose it in a public API, and it should only be used when 
+	/// which throws in case the collection is modified during enumeration; this
+	/// is for the sake of <see cref="DList{T}"/>.) For these and other reasons,
+	/// one should not expose it in a public API, and it should only be used when
 	/// performance is very important.
 	/// <para/>
 	/// Also, do not use the <c>default(InternalDList{T})</c> or the equivalent
-	/// "default constructor", which only exists because C# requires it. Always 
-	/// specify an initial capacity or copy InternalDeque.Empty so that the 
-	/// internal array gets a value. All methods in this structure assume _array 
+	/// "default constructor", which only exists because C# requires it. Always
+	/// specify an initial capacity or copy InternalDeque.Empty so that the
+	/// internal array gets a value. All methods in this structure assume _array
 	/// is not null.
 	/// <para/>
-	/// This class does not implement <see cref="IDeque{T}"/> and <see 
+	/// This class does not implement <see cref="IDeque{T}"/> and <see
 	/// cref="IList{T}"/> in order to help you not to shoot yourself in the foot.
-	/// The problem is that any extension methods used with those interfaces that 
+	/// The problem is that any extension methods used with those interfaces that
 	/// change the list, such as PopLast(), malfunction because the structure is
-	/// implicitly boxed, producing a shallow copy. By not implementing those 
+	/// implicitly boxed, producing a shallow copy. By not implementing those
 	/// interfaces, the extension methods are not available, ensuring you don't
-	/// accidently box the structure. If you need those interfaces, You can always 
-	/// call <see cref="AsDList"/> to construct a <see cref="DList{T}"/> in O(1) 
+	/// accidently box the structure. If you need those interfaces, You can always
+	/// call <see cref="AsDList"/> to construct a <see cref="DList{T}"/> in O(1)
 	/// time.
 	/// <para/>
 	/// You may be curious why <see cref="InternalList{T}"/>, in contrast, DOES
@@ -58,7 +58,6 @@ namespace Loyc.Collections.Impl
 	/// so boxing the <see cref="InternalList{T}"/> is the only fast way to get
 	/// an instance of <see cref="IList{T}"/>.
 	/// </remarks>
-	[Serializable()]
 	#if !CompactFramework
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	#endif
@@ -151,7 +150,7 @@ namespace Loyc.Collections.Impl
 				i = startIndex - size1;
 				if (startIndex < 0) CheckParam.ThrowOutOfRange("startIndex");
 			}
-			
+
 			for (;;) {
 				for (; i < stop; i++) {
 					if (comparer.Equals(item, _array[i]))
@@ -191,14 +190,14 @@ namespace Loyc.Collections.Impl
 		public void PushLast(T item)
 		{
 			AutoRaiseCapacity(1);
-			
+
 			int i = _start + _count;
 			if (i >= _array.Length)
 				i -= _array.Length;
 			_array[i] = item;
 			++_count;
 		}
-		
+
 		public void PushFirst(T item)
 		{
 			AutoRaiseCapacity(1);
@@ -214,7 +213,7 @@ namespace Loyc.Collections.Impl
 			if (amount == 0)
 				return;
 			Debug.Assert((uint)amount <= (uint)_count);
-			
+
 			_count -= amount;
 			int i = IncMod(_start, _count);
 			for (;;) {
@@ -230,7 +229,7 @@ namespace Loyc.Collections.Impl
 		public void PopFirst(int amount)
 		{
 			Debug.Assert(amount <= _count);
-			
+
 			_count -= amount;
 			int i = _start;
 			_start = IncMod(_start, amount);
@@ -272,13 +271,13 @@ namespace Loyc.Collections.Impl
 				Debug.Assert(value >= _count);
 
 				T[] newArray = new T[value];
-				
+
 				int size1 = FirstHalfSize;
 				int size2 = _count - size1;
 				Array.Copy(_array, _start, newArray, 0, size1);
 				if (size2 > 0)
 				    Array.Copy(_array, 0, newArray, size1, size2);
-				
+
 				_start = 0;
 				_array = newArray;
 			}
@@ -367,7 +366,7 @@ namespace Loyc.Collections.Impl
 			_start = DecMod(_start, amount);
 			if (index <= 0)
 				return _start;
-			
+
 			T[] array = _array;
 			int iTo = _start;
 			int iFrom = iTo + amount;
@@ -385,7 +384,7 @@ namespace Loyc.Collections.Impl
 			Debug.Assert(iFrom >= array.Length);
 			Debug.Assert(iTo < array.Length);
 			iFrom -= array.Length;
-			
+
 			// 2nd->1st
 			copyAmt = Min(array.Length - iTo, left);
 			CopyFwd(array, iFrom, iTo, copyAmt);
@@ -394,7 +393,7 @@ namespace Loyc.Collections.Impl
 			iFrom += copyAmt;
 			Debug.Assert(iTo + copyAmt == array.Length);
 			iTo = 0;
-			
+
 			// 2nd->2nd
 			copyAmt = left;
 			CopyFwd(array, iFrom, iTo, copyAmt);
@@ -515,7 +514,7 @@ namespace Loyc.Collections.Impl
 			{
 				if (index < _count)
 					RH_CollapseBack(index, amount);
-				
+
 				// Clear deleted elements (to be GC-friendly)
 				int clearIndex = Internalize(_count - amount);
 				ClearDeleted(ref clearIndex, amount);
@@ -526,11 +525,11 @@ namespace Loyc.Collections.Impl
 
 		private void ClearDeleted(ref int start, int amount)
 		{
-			// start is an /internal/ index that is allowed to exceed the array 
-			// length (wraps around). At the end of the method, 'start' points to 
-			// the end of the range (with array.Length subtracted if it was 
+			// start is an /internal/ index that is allowed to exceed the array
+			// length (wraps around). At the end of the method, 'start' points to
+			// the end of the range (with array.Length subtracted if it was
 			// out-of-range)
-			T[] array = _array;				
+			T[] array = _array;
 			int adjusted = start + amount;
 			if (adjusted >= array.Length) {
 				adjusted -= array.Length;
@@ -547,7 +546,7 @@ namespace Loyc.Collections.Impl
 		{
 			T[] array = _array;
 			int start = _start;
-			
+
 			// Collapse front half. For example:
 			// _array[20]:              [e f g h i j k l m n o p _ _ _ _ a b c d]
 			// (_count=16)                     ^index=7, amount=2        ^_start=16
@@ -586,7 +585,7 @@ namespace Loyc.Collections.Impl
 			// _array[20]:           [m n o p _ _ _ _ a b c d e f g h i j k l]
 			// (_count=16)                            ^_start=8         ^index=9, amount=2
 			// Copy within 1st half: [m n o p _ _ _ _ a b c d e f g h i L k l]
-			//                                                        to^   ^from 
+			//                                                        to^   ^from
 			// Copy 2nd->1st half:   [m n o p _ _ _ _ a b c d e f g h i L M N]
 			//                        ^from                               ^to
 			// Copy within 2nd half: [O P o p _ _ _ _ a b c d e f g h i L M N]
@@ -750,7 +749,7 @@ namespace Loyc.Collections.Impl
 		    if (subcount > _count - start)
 		        subcount = _count - start;
 
-			return new InternalDList<T> { 
+			return new InternalDList<T> {
 				_start = IncMod(_start, start),
 				_count = subcount,
 				_array = _array
@@ -779,7 +778,7 @@ namespace Loyc.Collections.Impl
 			T[] array;
 			DList<T> wrapper;
 			T _current;
-			
+
 			internal Enumerator(InternalDList<T> list, DList<T> wrapper)
 			{
 				size1 = list.FirstHalfSize;
@@ -802,7 +801,7 @@ namespace Loyc.Collections.Impl
 					stop = stop2;
 					i = 0;
 				}
-				
+
 				if (wrapper.Count != oldCount)
 					throw new EnumerationException();
 
@@ -811,7 +810,7 @@ namespace Loyc.Collections.Impl
 			}
 
 			public T Current { get { return _current; } }
-		
+
 			void  IDisposable.Dispose() { }
 			object  System.Collections.IEnumerator.Current { get { return Current; } }
 			void  System.Collections.IEnumerator.Reset() { throw new NotSupportedException(); }
@@ -938,7 +937,7 @@ namespace Loyc.Collections.Impl
 		public void CopyTo(int sourceIndex, T[] destination, int destinationIndex, int subcount)
 		{
 			Debug.Assert((uint)sourceIndex <= (uint)_count && (uint)subcount <= (uint)(_count - sourceIndex));
-			
+
 			int iindex = Internalize(sourceIndex);
 			for (int i = 0; i < subcount; i++) {
 				destination[i] = _array[iindex];
@@ -958,9 +957,9 @@ namespace Loyc.Collections.Impl
 		}
 
 		/// <summary>Returns a <see cref="DList{T}"/> wrapped around this list.</summary>
-		/// <remarks>WARNING: in order to run in O(1) time, the two lists 
-		/// (InternalDList and DList) share the same array, but not the same 
-		/// internal state. You must stop using one list after modifying the 
+		/// <remarks>WARNING: in order to run in O(1) time, the two lists
+		/// (InternalDList and DList) share the same array, but not the same
+		/// internal state. You must stop using one list after modifying the
 		/// other, because changes to one list may have strange effects in
 		/// the other list.</remarks>
 		public DList<T> AsDList()
@@ -995,7 +994,7 @@ namespace Loyc.Collections.Impl
 				InternalList.Sort(_array, _start + index, count, comp);
 			else if (index == 0 && count == Count)
 				Sort(comp);
-			else 
+			else
 				// Use a slower IList<T> sort because the array sort requires contiguous input
 				ListExt.Sort(AsDList(), index, count, comp);
 		}

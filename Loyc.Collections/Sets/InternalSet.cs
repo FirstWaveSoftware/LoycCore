@@ -2,9 +2,9 @@
 // License: LGPL
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 using Loyc.Math;
 
 namespace Loyc.Collections.Impl
@@ -12,46 +12,46 @@ namespace Loyc.Collections.Impl
 	/// <summary>A hash-trie data structure for use inside other data structures.</summary>
 	/// <remarks>
 	/// <see cref="InternalSet{T}"/> is a dual-mode mutable/immutable "hash trie",
-	/// which is a kind of tree that is built from the hashcode of the items it 
+	/// which is a kind of tree that is built from the hashcode of the items it
 	/// contains. It supports fast cloning, and is suitable as a persistent data
 	/// structure.
 	/// <para/>
 	/// InternalSet&lt;T> is not designed to be used by itself, but as a building
-	/// block for other data structures. It has no Count property because it does 
-	/// not know its own size; the outer data structure must track the size if 
-	/// the size is needed. The lack of a Count property allows an empty 
+	/// block for other data structures. It has no Count property because it does
+	/// not know its own size; the outer data structure must track the size if
+	/// the size is needed. The lack of a Count property allows an empty
 	/// InternalSet to use a mere single word of memory!
 	/// <para/>
 	/// This is my second implementation of InternalSet. The original version
 	/// used memory very efficiently for reference types, but required boxing for
 	/// value types; this version needs more memory, but is moderately faster in
-	/// most cases and supports value types without boxing. I estimate that 
-	/// InternalSet (the second version) uses roughly the same amount of memory as 
-	/// <see cref="HashSet{T}"/> (actually more or less depending on the number of 
+	/// most cases and supports value types without boxing. I estimate that
+	/// InternalSet (the second version) uses roughly the same amount of memory as
+	/// <see cref="HashSet{T}"/> (actually more or less depending on the number of
 	/// items in the set, and on the hashcode distribution.)
 	/// <para/>
 	/// Collection classes based on InternalSet are most efficient for small sets,
-	/// but if you always need small sets then a simple wrapper around HashSet 
-	/// would suffice. In fact, despite my best efforts, this data type rarely 
+	/// but if you always need small sets then a simple wrapper around HashSet
+	/// would suffice. In fact, despite my best efforts, this data type rarely
 	/// outperforms HashSet, but this is because <see cref="HashSet{T}"/> is quite
 	/// fast, not because <see cref="InternalSet{T}"/> is slow. Still, there are
 	/// several reasons to consider using a collection class based on InternalSet
 	/// instead of <see cref="HashSet{T}"/>:
 	/// <ul>
-	/// <li>All of my set collections offer read-only variants. You can instantly 
-	/// convert any mutable set or dictionary into an immutable one, and convert 
-	/// any immutable set or dictionary back into a mutable one in O(1) time; 
-	/// this relies on the same fast-cloning technique I developed for 
+	/// <li>All of my set collections offer read-only variants. You can instantly
+	/// convert any mutable set or dictionary into an immutable one, and convert
+	/// any immutable set or dictionary back into a mutable one in O(1) time;
+	/// this relies on the same fast-cloning technique I developed for
 	/// <see cref="AList{T}"/>*.</li>
 	/// <li>All of my set collections offer set operators that combine or intersect
 	/// two sets without modifying the source sets ("|" for union, "&amp;" for
 	/// intersection, "-" for subtraction); these operators are available on both
 	/// the mutable and immutable versions of the sets.</li>
-	/// <li><see cref="InternalSet{T}"/> supports combined "get-and-replace" and 
+	/// <li><see cref="InternalSet{T}"/> supports combined "get-and-replace" and
 	/// "get-and-remove" operations, which is mainly useful when it is being used
-	/// as a dictionary (i.e. when T is a key-value pair). There are two "Add" 
-	/// modes, "add if not present" and "add or replace"; both modes retrieve the 
-	/// existing value if the key was already present, and the "add or replace" 
+	/// as a dictionary (i.e. when T is a key-value pair). There are two "Add"
+	/// modes, "add if not present" and "add or replace"; both modes retrieve the
+	/// existing value if the key was already present, and the "add or replace"
 	/// mode furthermore changes the value. Also, when removing an item, you can
 	/// get the value that was removed.</li>
 	/// <li><see cref="InternalSet{T}"/>'s enumerator allows you to change or
@@ -60,40 +60,40 @@ namespace Loyc.Collections.Impl
 	/// <li><see cref="InternalSet{T}"/> was inspired by Clojure's PersistentHashMap,
 	/// or rather by Karl Krukow's blog posts about PersistentHashMap**, and so it
 	/// is designed so that you can use it as a fully persistent set, which means
-	/// that you can keep a copy of every old version of the set that has ever 
-	/// existed, if you want. The "+" and "-" operators (provided on the wrapper 
-	/// classes, not on <see cref="InternalSet{T}"/> itself) allow you to add or 
-	/// remove a single item without modifying the original set. There is a 
+	/// that you can keep a copy of every old version of the set that has ever
+	/// existed, if you want. The "+" and "-" operators (provided on the wrapper
+	/// classes, not on <see cref="InternalSet{T}"/> itself) allow you to add or
+	/// remove a single item without modifying the original set. There is a
 	/// substantial performance penalty for overusing these operators, but these
-	/// operators are cheaper than duplicating a <see cref="HashSet{T}"/> every 
+	/// operators are cheaper than duplicating a <see cref="HashSet{T}"/> every
 	/// time you modify it.</li>
 	/// </ul>
 	/// * After developing <see cref="AList{T}"/> and Loyc trees, I realized that
 	///   freezable classes are error-prone, because it is sometimes difficult for
 	///   a developer to figure out (before run-time) whether a given object could
 	///   be frozen. If an object is frozen and you modify it, the compiler will
-	///   never detect your mistake in advance and warn you. The collections based 
-	///   on <see cref="InternalSet{T}"/> fix this problem by having separate data 
+	///   never detect your mistake in advance and warn you. The collections based
+	///   on <see cref="InternalSet{T}"/> fix this problem by having separate data
 	///   types for frozen and unfrozen (a.k.a. immutable and mutable) collections.<br/>
 	/// ** http://blog.higher-order.net/2010/08/16/assoc-and-clojures-persistenthashmap-part-ii/
 	/// <para/>
-	/// InternalSet is not efficient for Ts that are expensive to compare; unlike 
-	/// standard .NET collections, this data structure does not store the hashcode 
-	/// of each item inside the collection. The memory saved by not storing the 
-	/// hashcode compensates for the extra memory that <c>InternalSet</c> tends to 
+	/// InternalSet is not efficient for Ts that are expensive to compare; unlike
+	/// standard .NET collections, this data structure does not store the hashcode
+	/// of each item inside the collection. The memory saved by not storing the
+	/// hashcode compensates for the extra memory that <c>InternalSet</c> tends to
 	/// require due to its structure.
 	/// <para/>
-	/// As I was saying, this data structure is inspired by Clojure's 
-	/// PersistentHashMap. Whereas PersistentHashMap uses nodes of size 32, I chose 
-	/// to use nodes of size 16 in order to increase space efficiency for small 
-	/// sets; for some reason I tend to design programs that use many small 
-	/// collections and a few big ones, so I tend to prefer designs that stay 
+	/// As I was saying, this data structure is inspired by Clojure's
+	/// PersistentHashMap. Whereas PersistentHashMap uses nodes of size 32, I chose
+	/// to use nodes of size 16 in order to increase space efficiency for small
+	/// sets; for some reason I tend to design programs that use many small
+	/// collections and a few big ones, so I tend to prefer designs that stay
 	/// efficient at small sizes.
 	/// <para/>
-	/// So InternalSet is a tree of nodes, with each level of the tree 
+	/// So InternalSet is a tree of nodes, with each level of the tree
 	/// representing 4 bits of the hashcode. Slots in the root node are selected
 	/// based on bits 0 to 3 of the hashcode, slots in children of the root are
-	/// selected based on bits 4 to 7 of the hashcode, and so forth. Here's a 
+	/// selected based on bits 4 to 7 of the hashcode, and so forth. Here's a
 	/// diagram:
 	/// <pre>
 	///                              _root*
@@ -107,51 +107,51 @@ namespace Loyc.Collections.Impl
 	///              |     |                |      |     |
 	///            0x13   0x73             0x57  0x09   0x59
 	/// </pre>
-	/// Each of the 12 nodes on this diagram has 16 slots for items of type T, and 
-	/// the 4 nodes that have children have 16 additional slots for references to 
-	/// children. The numbers on the nodes represent their role in the tree; for 
+	/// Each of the 12 nodes on this diagram has 16 slots for items of type T, and
+	/// the 4 nodes that have children have 16 additional slots for references to
+	/// children. The numbers on the nodes represent their role in the tree; for
 	/// example:
 	/// <ul>
 	/// <li>0x59 is at depth 2 and only holds items whose hashcodes end with 0x59.</li>
 	/// <li>0x9 is at depth 1 and only holds items whose hashcodes end with 0x9.  </li>
-	/// <li>the root node is always at depth 0 and can hold any item regardless of 
-	///     hashcode.</li> 
+	/// <li>the root node is always at depth 0 and can hold any item regardless of
+	///     hashcode.</li>
 	/// </ul>
 	/// <para/>
 	/// Technically, this data structure has O(log N) time complexity for search,
 	/// insertion and removal. However, it's a base-16 logarithm and maxes out at
-	/// 8 levels, so it is faster than typical O(log N) algorithms that are 
+	/// 8 levels, so it is faster than typical O(log N) algorithms that are
 	/// base-2. At smaller sizes, its speed is similar to a conventional hashtable,
 	/// and some operations are still efficient at large sizes, too.
 	/// <para/>
-	/// Unlike <see cref="InternalList{T}"/>, <c>new InternalSet&lt;T>()</c> is a 
+	/// Unlike <see cref="InternalList{T}"/>, <c>new InternalSet&lt;T>()</c> is a
 	/// valid empty set. Moreover, because the root node is never changed after
 	/// it is created (unless you modify it while it is frozen), all copies of
 	/// an <see cref="InternalSet{T}"/> represent the same set unless the set is
 	/// frozen with <see cref="CloneFreeze"/>; see <see cref="Thaw()"/> for more
 	/// information.
 	/// <para/>
-	/// The neatest feature of this data structure is fast cloning and subtree 
-	/// sharing. You can call <see cref="CloneFreeze"/> to freeze/clone the trie 
-	/// in O(1) time; this freezes the root node (a transitive property that 
-	/// implicitly affects all children), but still permits the hashtrie to be 
-	/// modified by copying nodes on-demand. Thus the trie is actually frozen, but 
+	/// The neatest feature of this data structure is fast cloning and subtree
+	/// sharing. You can call <see cref="CloneFreeze"/> to freeze/clone the trie
+	/// in O(1) time; this freezes the root node (a transitive property that
+	/// implicitly affects all children), but still permits the hashtrie to be
+	/// modified by copying nodes on-demand. Thus the trie is actually frozen, but
 	/// copy-on-write behavior provides the illusion that it is still editable.
 	/// <para/>
 	/// This data structure is designed to support classes that contain mutable
 	/// data, so that it can be used to construct dictionaries; that is, it allows
 	/// T values that have an immutable "key" part and a mutable "value" part.
 	/// Call <see cref="Find"/> to retrieve the value associated with a key, and
-	/// call <see cref="Add"/> with replaceIfPresent=true to change the "value" 
-	/// associated with a key. The <see cref="Map{K,V}"/> and <see cref="MMap{K,V}"/> 
+	/// call <see cref="Add"/> with replaceIfPresent=true to change the "value"
+	/// associated with a key. The <see cref="Map{K,V}"/> and <see cref="MMap{K,V}"/>
 	/// classes rely on this feature to implement a dictionary.
 	/// <para/>
 	/// <b>How it works</b>: I call this data structure a "hash-trie" because it
-	/// blends properties of hashtables and tries. It places items into a tree 
-	/// by taking their hashcode and dividing it into 8 groups of 4 bits, starting 
+	/// blends properties of hashtables and tries. It places items into a tree
+	/// by taking their hashcode and dividing it into 8 groups of 4 bits, starting
 	/// at the least significant bits. Each group of 4 bits is used to select a
 	/// location in the tree/trie, and each node of the tree always has 16 items
-	/// (and 16 children, if it has any children at all.) For example, consider a 
+	/// (and 16 children, if it has any children at all.) For example, consider a
 	/// tree with 7 items that have the following hash codes:
 	/// <para/>
 	/// - J: 0x89BC98B1 <br/>
@@ -163,67 +163,67 @@ namespace Loyc.Collections.Impl
 	/// - P: 0x0732AF01 (Note: O.Equals(P)==false, but the hashcodes are equal)
 	/// <para/>
 	/// The top level of the trie represents the lowest 4 bits of the hashcode.
-	/// Since each node has 16 items, 7 items can usually fit in a single node, 
+	/// Since each node has 16 items, 7 items can usually fit in a single node,
 	/// but in this case there are too many hashcodes that end with "1", causing
 	/// a node split:
 	/// <pre>
 	///                            |0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F|
 	///        _root ==> _items    | |!|!|M|!| | | | | | | |K| | | |
 	///                  _children | |*| | | | | | | | | | | | | | |
-	///                  
+	///
 	///                            |0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F|
 	/// * child node ==> _items    |O|P| | | |N| | | |L| |J| | | | |
 	///                  _children (null)
-	///                  
-	/// ("!" represents the deleted flag, which indicates that an item was 
+	///
+	/// ("!" represents the deleted flag, which indicates that an item was
 	///  once present at this location.)
 	/// </pre>
 	/// The second level of the trie represents bits 4-7, which is the second-
-	/// last hex digit. You can see, for example, that the second-last digit of 
+	/// last hex digit. You can see, for example, that the second-last digit of
 	/// N is 5, therefore N is stored at index 5 of the child node.
 	/// <para/>
 	/// In case hashcodes of different objects collide at a particular digit,
 	/// adjacent array elements can be used to hold the different objects that
-	/// share the same 4-bit sub-hashcode; this is a bounded-time variation on 
-	/// the linearly-probed hashtable. In this example, both O and P have 
+	/// share the same 4-bit sub-hashcode; this is a bounded-time variation on
+	/// the linearly-probed hashtable. In this example, both O and P have
 	/// zero as their second-last digit. Assuming O is added first, it takes
 	/// slot [0]; then P takes slot [1]. Up to 3 adjacent entries can be used
-	/// for a given hashcode; therefore, when searching for an entry it is 
-	/// necessary to search up to 4 locations in each node: the preferred 
+	/// for a given hashcode; therefore, when searching for an entry it is
+	/// necessary to search up to 4 locations in each node: the preferred
 	/// location, plus 3 adjacent locations.
 	/// <para/>
 	/// For example, support we search for an item X that is not in the set
-	/// and has hashcode 0xCCA9A241. In that case, the Find methods starts with 
-	/// the least-significant digit, 1. This points us to the child slot; an 
-	/// invariant of our hashtrie is that if there is a child node, all items 
-	/// with the corresponding sub-hashcode must be placed in the child node. 
-	/// Therefore it is impossible, for example, that X could be located at 
+	/// and has hashcode 0xCCA9A241. In that case, the Find methods starts with
+	/// the least-significant digit, 1. This points us to the child slot; an
+	/// invariant of our hashtrie is that if there is a child node, all items
+	/// with the corresponding sub-hashcode must be placed in the child node.
+	/// Therefore it is impossible, for example, that X could be located at
 	/// index 2 of the root node; the existence of the child node guarantees
 	/// that it is not there. So the Find method looks inside the child node,
 	/// at index 4 (the second-last digit of X's hashcode) and finds nothing.
 	/// It also looks at indexes 5, 6, and 7, comparing N to X in the process.
 	/// Since none of these slots contain X, the Find method returns false.
 	/// <para/>
-	/// Something unfortunate happens if five or more objects have the same 
+	/// Something unfortunate happens if five or more objects have the same
 	/// hashcode: it forces the tree to have maximum depth. Since a particular
 	/// hashcode can only be repeated four times in a single node, upon adding
 	/// a fifth item with the same hashcode, child nodes are created for all
-	/// 8 digits of the hashcode. At the 8th level, a special node type is 
+	/// 8 digits of the hashcode. At the 8th level, a special node type is
 	/// allocated that contains, in addition to the usual 16 slots, a list of
 	/// "overflow slots" holds items that cannot fit in the normal slots due
 	/// to excessive collisions. All of this has a substantial memory penalty;
-	/// to avoid this problem, use a better hash function that does not create 
+	/// to avoid this problem, use a better hash function that does not create
 	/// false collisions.
 	/// <para/>
-	/// If there are more than 16 items that share the same 28 lower-order 
-	/// bits, the overflow area on the 8th level node will expand to hold all 
-	/// of these items; this is the only way that a node can have more than 
+	/// If there are more than 16 items that share the same 28 lower-order
+	/// bits, the overflow area on the 8th level node will expand to hold all
+	/// of these items; this is the only way that a node can have more than
 	/// 16 items.
 	/// <para/>
 	/// Fast cloning works by setting the "IsFrozen" flag on the root node.
-	/// When a node is frozen, all its children are frozen implicitly; since 
+	/// When a node is frozen, all its children are frozen implicitly; since
 	/// the children are not marked right away, the <see cref="CloneFreeze"/>
-	/// method can return immediately. The frozen flag will be propagated from 
+	/// method can return immediately. The frozen flag will be propagated from
 	/// parents to children lazily, when the tree is modified later.
 	/// <para/>
 	/// To "thaw" a node, a copy is made of that node and all of its parents.
@@ -243,15 +243,15 @@ namespace Loyc.Collections.Impl
 	/// Remember, only the root's IsFrozen flag is set at first; all other nodes
 	/// do not have the frozen flag yet.
 	/// <para/>
-	/// Now suppose that an item is added to node 0x9 (e.g. something with hashcode 
-	/// 0x39 could go in this node). Before the new item can be placed in node 0x9, 
-	/// it must be thawed. To thaw it, an unfrozen copy is made, leaving the 
-	/// original untouched. The copy is not frozen, but it does point to the same 
-	/// frozen children (0x09 and 0x59), so a for-loop sets the IsFrozen flag of 
-	/// each child. Then, the new item is added to the copy of node 0x9. Next, the 
-	/// _root is also unfrozen by making a copy of it with <c>IsFrozen=false</c>. 
-	/// Again, a for-loop sets the IsFrozen flag of each frozen child, and then 
-	/// child slot [9] in the root is replaced with the new copy of 0x9 (which has 
+	/// Now suppose that an item is added to node 0x9 (e.g. something with hashcode
+	/// 0x39 could go in this node). Before the new item can be placed in node 0x9,
+	/// it must be thawed. To thaw it, an unfrozen copy is made, leaving the
+	/// original untouched. The copy is not frozen, but it does point to the same
+	/// frozen children (0x09 and 0x59), so a for-loop sets the IsFrozen flag of
+	/// each child. Then, the new item is added to the copy of node 0x9. Next, the
+	/// _root is also unfrozen by making a copy of it with <c>IsFrozen=false</c>.
+	/// Again, a for-loop sets the IsFrozen flag of each frozen child, and then
+	/// child slot [9] in the root is replaced with the new copy of 0x9 (which has
 	/// the new item).
 	/// <para/>
 	/// This concludes the thawing process. So at this point, just two nodes are
@@ -268,42 +268,42 @@ namespace Loyc.Collections.Impl
 	///              |     |                |      |     |
 	///            0x13   0x73             0x57  0x09*  0x59*
 	/// </pre>
-	/// There are 12 nodes here and 2 have been copied. The other 10 nodes are 
+	/// There are 12 nodes here and 2 have been copied. The other 10 nodes are
 	/// still shared between the modified tree and the clone. Next, if you add an
 	/// item to node 0x6, only that one node has to be thawed; the root has already
-	/// been thawed and there is no need to make another copy of it. Due to the 
-	/// random nature of hashcodes, it is probable that as you modify the set after 
+	/// been thawed and there is no need to make another copy of it. Due to the
+	/// random nature of hashcodes, it is probable that as you modify the set after
 	/// cloning it, it is typical for each modification to require approximately
 	/// one node to be thawed, until the majority of the nodes have been thawed.
 	/// <para/>
-	/// InternalSet does not thaw unnecessarily. If you try to remove an item that 
-	/// is not present, none of the tree will be thawed. If you add an item that is 
-	/// already present in a frozen node (and you do not ask for replacement), 
+	/// InternalSet does not thaw unnecessarily. If you try to remove an item that
+	/// is not present, none of the tree will be thawed. If you add an item that is
+	/// already present in a frozen node (and you do not ask for replacement),
 	/// that node will not be thawed. <see cref="Contains"/> and <see cref="Find"/>
 	/// never cause thawing.
 	/// <para/>
 	/// I am not aware whether a data structure quite like this has been described
-	/// in the comp-sci literature or not (although it probably has). If you see 
+	/// in the comp-sci literature or not (although it probably has). If you see
 	/// something like this in a paper, let me know.
 	/// <para/>
-	/// When attempting to insert a new item in a node, the first available empty 
+	/// When attempting to insert a new item in a node, the first available empty
 	/// slot will be used; and when searching for an item, the search stops at an
 	/// empty slot. For example, suppose that the root node contains these items:
 	/// <pre>
 	///                     |0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F|
 	/// _root ==> _items    |A| |C| |E|F| | |I| |K|L| |N| | |
 	/// </pre>
-	/// Now suppose that you are searching for, or adding, or an item 'D' whose 
+	/// Now suppose that you are searching for, or adding, or an item 'D' whose
 	/// hashcode ends with '3'. Slot 3 is empty, and this data structure works
-	/// in such a way that the search for 'D' can end immediately with a result 
+	/// in such a way that the search for 'D' can end immediately with a result
 	/// of 'false', or it can be added at slot 2 immediately without comparing
-	/// 'D' with slots 4, 5 and 6 which (if 2 were not empty) might already 
+	/// 'D' with slots 4, 5 and 6 which (if 2 were not empty) might already
 	/// contain 'D'.
 	/// <para/>
-	/// The reasoning behind this rule is that if 'D' already existed in the set, 
+	/// The reasoning behind this rule is that if 'D' already existed in the set,
 	/// slot 2 should not be empty; since it is empty, 'D' must not be in the set
 	/// already. However, deletions could violate this logic. For example, imagine
-	/// that we add two items, first 'd' and then 'D', which both have a hashcode 
+	/// that we add two items, first 'd' and then 'D', which both have a hashcode
 	/// that ends in '3'. Then the node would look like this:
 	/// <pre>
 	///                     |0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F|
@@ -316,15 +316,15 @@ namespace Loyc.Collections.Impl
 	/// </pre>
 	/// Now 'D' is left outside its 'home' location of 3. If you then attempt to
 	/// add 'D' to the set, a duplicate copy would be added at position '3'! Or if
-	/// you search for 'D' instead, the result would be 'false' even though D is 
+	/// you search for 'D' instead, the result would be 'false' even though D is
 	/// present in the set.
 	/// <para/>
 	/// I thought of two solutions to this problem; the first was to 'fix' the node
 	/// after a deletion so that 'D' would move from slot 6 to 3. But there's a big
-	/// problem with this solution because <see cref="InternalSet{T}.Enumerator"/> 
+	/// problem with this solution because <see cref="InternalSet{T}.Enumerator"/>
 	/// has a <c>RemoveCurrent()</c> method which is supposed to delete the current
-	/// item and move to the next one. If the node had to be rearranged in response 
-	/// to a deletion, it would be very difficult to guarantee that the enumerator 
+	/// item and move to the next one. If the node had to be rearranged in response
+	/// to a deletion, it would be very difficult to guarantee that the enumerator
 	/// still returns each item in the set exactly once.
 	/// <para/>
 	/// The second solution, which I actually implemented, puts a special "deleted"
@@ -334,36 +334,35 @@ namespace Loyc.Collections.Impl
 	/// <para/>
 	/// There is a third solution--always check all four possible slots. But the
 	/// comparison is not always cheap, so <see cref="InternalSet{T}"/> does not
-	/// use this solution unless you are using <c>null</c> as the value of the 
+	/// use this solution unless you are using <c>null</c> as the value of the
 	/// <see cref="IEqualityComparer{T}"/>.
 	/// <para/>
-	/// Since <see cref="InternalSet{T}"/> can hold any value of type T, the 
-	/// "deleted" and "empty/in use" indicators cannot physically be stored in the 
-	/// slots of type T. Instead, these indicators are stored separately, with 16 
+	/// Since <see cref="InternalSet{T}"/> can hold any value of type T, the
+	/// "deleted" and "empty/in use" indicators cannot physically be stored in the
+	/// slots of type T. Instead, these indicators are stored separately, with 16
 	/// bits for "deleted" flags and 16 bits for "used" flags.
 	/// <para/>
-	/// During a normal delete operation, if a node has no children and is using 
-	/// only one or two slots after an item is deleted, the parent is checked for 
-	/// empty slots to find out whether the child is really necessary. If there are 
-	/// enough free slot(s) in the parent node, the remaining items in the child 
-	/// are transferred back back to the parent and the child is deleted (the 
+	/// During a normal delete operation, if a node has no children and is using
+	/// only one or two slots after an item is deleted, the parent is checked for
+	/// empty slots to find out whether the child is really necessary. If there are
+	/// enough free slot(s) in the parent node, the remaining items in the child
+	/// are transferred back back to the parent and the child is deleted (the
 	/// reference to it is cleared to null).
 	/// <para/>
 	/// Unfortunately, this behavior is not available when you call
 	/// <see cref="Enumerator.RemoveCurrent"/>. In order to maintain the integrity
 	/// of the enumerator, a child node will not be deleted during a call to
 	/// <c>RemoveCurrent</c> unless the node is completely empty after the removal.
-	/// Consequently, the tree will use extra memory if you remove most, but not 
+	/// Consequently, the tree will use extra memory if you remove most, but not
 	/// all, items from the set using <c>RemoveCurrent</c>.
 	/// <para/>
-	/// By the way, unlike the original implementation, this version of InternalSet 
+	/// By the way, unlike the original implementation, this version of InternalSet
 	/// allows 'null' to be a member of the set.
 	/// <para/>
-	/// Interesting fact: it is possible for two sets to be equal (contain the 
+	/// Interesting fact: it is possible for two sets to be equal (contain the
 	/// same items), and yet for those items to be enumerated in different orders
 	/// in the two sets.
 	/// </remarks>
-	[Serializable]
 	public struct InternalSet<T> : IEnumerable<T>
 	{
 		/// <summary>An empty set.</summary>
@@ -373,7 +372,7 @@ namespace Loyc.Collections.Impl
 
 		/// <summary>This is <see cref="EqualityComparer{T}.Default"/>, or
 		/// null if T implements <see cref="IReferenceComparable"/>.</summary>
-		public static readonly IEqualityComparer<T> DefaultComparer = typeof(IReferenceComparable).IsAssignableFrom(typeof(T)) ? null : EqualityComparer<T>.Default;
+		public static readonly IEqualityComparer<T> DefaultComparer = typeof(IReferenceComparable).GetTypeInfo().IsAssignableFrom( typeof(T).GetTypeInfo() ) ? null : EqualityComparer<T>.Default;
 
 		const int BitsPerLevel = 4;
 		const int FanOut = 1 << BitsPerLevel;
@@ -383,7 +382,6 @@ namespace Loyc.Collections.Impl
 		const int CounterPerChild = FanOut << 1;
 		const short OverflowFlag = 1 << 12;
 
-		[Serializable]
 		internal class Node
 		{
 			internal T[] _items;
@@ -473,8 +471,8 @@ namespace Loyc.Collections.Impl
 			}
 
 			static readonly int SizeofNode = IntPtr.Size * 4 + 8;
-			protected static readonly int TArrayOverhead = IntPtr.Size * (typeof(T).IsValueType ? 3 : 4);
-			
+			protected static readonly int TArrayOverhead = IntPtr.Size * (typeof(T).GetTypeInfo().IsValueType ? 3 : 4);
+
 			/// <summary>Gets the size in bytes of this node and its children.</summary>
 			internal virtual int CountMemory(int sizeOfT, ref InternalSetStats s)
 			{
@@ -559,7 +557,7 @@ namespace Loyc.Collections.Impl
 			var node = new Node(0);
 			node.Freeze();
 			return node;
-		} 
+		}
 
 		Node _root;
 
@@ -585,15 +583,15 @@ namespace Loyc.Collections.Impl
 
 		#region CloneFreeze, Thaw, IsRootFrozen, HasRoot
 
-		/// <summary>Freezes the hashtrie so that any further changes require paths 
+		/// <summary>Freezes the hashtrie so that any further changes require paths
 		/// in the tree to be copied.</summary>
-		/// <remarks>This is an O(1) operation. It causes all existing copies of 
+		/// <remarks>This is an O(1) operation. It causes all existing copies of
 		/// this <see cref="InternalSet{T}"/>, as well as any other copies you make
-		/// in the future, to become independent of one another so that 
+		/// in the future, to become independent of one another so that
 		/// modifications to one copy do not affect any of the others.
 		/// <para/>
 		/// To unfreeze the hashtrie, simply modify it as usual with (for example)
-		/// a call to <see cref="Add"/> or <see cref="Remove"/>, or call 
+		/// a call to <see cref="Add"/> or <see cref="Remove"/>, or call
 		/// <see cref="Thaw"/>. Frozen parts of the trie are copied on-demand.
 		/// </remarks>
 		public InternalSet<T> CloneFreeze()
@@ -603,18 +601,18 @@ namespace Loyc.Collections.Impl
 			return this;
 		}
 
-		/// <summary>Thaws a frozen root node by duplicating it, or creates the 
+		/// <summary>Thaws a frozen root node by duplicating it, or creates the
 		/// root node if the set doesn't have one.</summary>
 		/// <remarks>Since <see cref="InternalSet{T}"/> is a structure rather
-		/// than a class, it's not immediately obvious what the happens when you 
-		/// copy it with the '=' operator. The <see cref="InternalList{T}"/> 
+		/// than a class, it's not immediately obvious what the happens when you
+		/// copy it with the '=' operator. The <see cref="InternalList{T}"/>
 		/// structure, for example, it is unsafe to copy (in general) because
 		/// as the list length changes, the two (or more) copies immediately
-		/// go "out of sync" because each copy has a separate Count property 
+		/// go "out of sync" because each copy has a separate Count property
 		/// and a separate array pointer--and yet they will share the same array,
 		/// at least temporarily, which can produce strange results.
 		/// <para/>
-		/// It is mostly safe to copy InternalSet instances, however, because 
+		/// It is mostly safe to copy InternalSet instances, however, because
 		/// they only contain a single piece of data (a reference to the root
 		/// node), and the root node only changes in two situations:
 		/// <ol>
@@ -622,9 +620,9 @@ namespace Loyc.Collections.Impl
 		/// <li>When the root node is frozen and you modify the set or call this method</li>
 		/// </ol>
 		/// In the second case, when you have frozen a set with <see cref="CloneFreeze()"/>,
-		/// all existing copies are frozen, and further changes affect only 
+		/// all existing copies are frozen, and further changes affect only
 		/// the specific copy that you change. You can also call <see cref="Thaw()"/>
-		/// if you need to make copies that are kept in sync, without 
+		/// if you need to make copies that are kept in sync, without
 		/// actually modifying the set first.
 		/// <para/>
 		/// This method has no effect if the root node is already thawed.
@@ -645,7 +643,7 @@ namespace Loyc.Collections.Impl
 		#region Helper methods
 
 		static int Adj(int i, int n) { return (i + n) & Mask; }
-		
+
 		static bool Equals(T value, ref T item, IEqualityComparer<T> comparer)
 		{
 			if (comparer == null)
@@ -686,7 +684,7 @@ namespace Loyc.Collections.Impl
 		}
 		static bool TryRemoveChild(ref Node slots, int iHome, Node child)
 		{
-			// This can only be called when 'child' has 0..4 items left. 
+			// This can only be called when 'child' has 0..4 items left.
 			// If there is room in the parent for the item(s), it places them
 			// there and removes the reference to the child.
 			Debug.Assert(MathEx.CountOnes(child._used & FlagMask) <= 4);
@@ -694,7 +692,7 @@ namespace Loyc.Collections.Impl
 			uint slotsUsed = (slots._used << FanOut) | (slots._used & FlagMask);
 			slotsUsed = (slotsUsed >> iHome) & Mask;
 			if (InternalSet_LUT.Zeros[slotsUsed] >= child.Counter) {
-				// There's room! Clear child reference, and put each item from 
+				// There's room! Clear child reference, and put each item from
 				// the child into the parent, or just stop if child is empty.
 				ReplaceChild(ref slots, iHome, null);
 				if (child.Counter > 0) {
@@ -727,7 +725,7 @@ namespace Loyc.Collections.Impl
 		{
 			if (_root == null)
 				_root = new Node(0);
-			return AddOrRemove(ref _root, ref item, GetHashCode(item, comparer), comparer, 
+			return AddOrRemove(ref _root, ref item, GetHashCode(item, comparer), comparer,
 			                   replaceIfPresent ? AddOrReplace : AddIfNotPresent);
 		}
 
@@ -806,10 +804,10 @@ namespace Loyc.Collections.Impl
 				// In this branch we'll compare with all four items to simplify the
 				// code (this approach needs an extra lookup table, _targetTable.)
 				// It would be foolish to use this approach for normal comparison,
-				// since comparison may be expensive in general (and besides, we 
+				// since comparison may be expensive in general (and besides, we
 				// should not call comparer.Equals() on slots that may be empty);
-				// but we know that reference comparison is trivial. This 
-				// optimization cannot be used when item==default(T), hence the 
+				// but we know that reference comparison is trivial. This
+				// optimization cannot be used when item==default(T), hence the
 				// check for item!=null above.
 				if ((object)item == (object)slots._items[iAdj = iHome] ||
 					(object)item == (object)slots._items[iAdj = Adj(iHome, 1)] ||
@@ -880,7 +878,7 @@ namespace Loyc.Collections.Impl
 				mdSlots.AddOverflowItem(item);
 				return true;
 			}
-		
+
 		found:
 			bool result = mode(ref slots, iAdj, item);
 			item = existing;
@@ -891,7 +889,7 @@ namespace Loyc.Collections.Impl
 			if (!object.ReferenceEquals(mode, AddIfNotPresent)) {
 				if (slots.IsFrozen)
 					slots = slots.Clone();
-				
+
 				var mdSlots = (MaxDepthNode)slots;
 				if (object.ReferenceEquals(mode, RemoveMode)) {
 					mdSlots.RemoveOverflowItem(i);
@@ -917,8 +915,8 @@ namespace Loyc.Collections.Impl
 			int max = count[i0] = 1, max_i = i0;
 
 			// The caller wants one of the items spilled to exist in the range
-			// Adj(i0, 0..4). Scanning the range Adj(i0, -1..5) guarantees that 
-			// this is true (given that 'max' will be at least two if it is 
+			// Adj(i0, 0..4). Scanning the range Adj(i0, -1..5) guarantees that
+			// this is true (given that 'max' will be at least two if it is
 			// increased from 1), whereas a larger range like -2..6 does not.
 			int depth = slots.Depth;
 			for (int adj = -1; adj < 5; adj++)
@@ -970,7 +968,7 @@ namespace Loyc.Collections.Impl
 			if (slots == null)
 				return false;
 			uint hc = GetHashCode(item, comparer);
-			
+
 			int iHome;
 			for (;;) {
 				iHome = (int)hc & Mask; // the "home" slot of the new item
@@ -1147,16 +1145,16 @@ namespace Loyc.Collections.Impl
 			{
 				get { return _current; }
 			}
-			
+
 			/// <summary>Changes the value associated with the current key.</summary>
 			/// <param name="comparer">Optional. If comparer!=null, it is used to
 			/// verify that the new value is equal to the old value.</param>
-			/// <exception cref="ArgumentException">According to the comparer 
+			/// <exception cref="ArgumentException">According to the comparer
 			/// provided, the new value is not "equal" to the old value.</exception>
 			/// <remarks>The new value must compare equal to the old value, since
 			/// the new value is placed at the same location in the trie. If a
 			/// value is placed in the wrong location, it becomes irretrievable
-			/// (except via enumerator), as search methods will be looking 
+			/// (except via enumerator), as search methods will be looking
 			/// elsewhere for it.</remarks>
 			public void SetCurrentValue(T value, ref InternalSet<T> set, IEqualityComparer<T> comparer)
 			{
@@ -1173,22 +1171,22 @@ namespace Loyc.Collections.Impl
 				slot = value;
 			}
 
-			/// <summary>Removes the current item from the set, and moves to the 
+			/// <summary>Removes the current item from the set, and moves to the
 			/// next item.</summary>
-			/// <returns>As with <see cref="MoveNext"/>, returns true if there is 
+			/// <returns>As with <see cref="MoveNext"/>, returns true if there is
 			/// another item after the current one and false if not.</returns>
 			/// <remarks>
-			/// Efficiency note: a normal Remove operation can delete a child node 
+			/// Efficiency note: a normal Remove operation can delete a child node
 			/// when there are still two items left in the child (the items can be
-			/// transferred to the parent node). RemoveCurrent, however, only 
-			/// deletes child nodes that become completely empty, because it would 
+			/// transferred to the parent node). RemoveCurrent, however, only
+			/// deletes child nodes that become completely empty, because it would
 			/// be very difficult to implement MoveNext() correctly (meaning, it
-			/// would be very difficult to enumerate every item exactly once) if 
+			/// would be very difficult to enumerate every item exactly once) if
 			/// the tree were "rebalanced" like this during enumeration.
 			/// <para/>
-			/// Therefore, in rare cases, a set whose size decreases via this 
+			/// Therefore, in rare cases, a set whose size decreases via this
 			/// method will use significantly more memory than necessary. And in
-			/// general, adding new items later will not re-use the mostly-empty 
+			/// general, adding new items later will not re-use the mostly-empty
 			/// nodes unless the new items used to be in the set (or have similar
 			/// hashcodes).
 			/// </remarks>
@@ -1213,7 +1211,7 @@ namespace Loyc.Collections.Impl
 					depth--;
 					child = parent;
 				}
-				
+
 				return MoveNext();
 			}
 
@@ -1306,9 +1304,9 @@ namespace Loyc.Collections.Impl
 		}
 
 		/// <summary>Adds the contents of 'other' to this set.</summary>
-		/// <param name="thisComparer">The comparer for this set (not for 'other', 
+		/// <param name="thisComparer">The comparer for this set (not for 'other',
 		/// which is simply enumerated).</param>
-		/// <param name="replaceIfPresent">If items in 'other' match items in this 
+		/// <param name="replaceIfPresent">If items in 'other' match items in this
 		/// set, this flag causes those items in 'other' to replace the items in
 		/// this set.</param>
 		public int UnionWith(IEnumerable<T> other, IEqualityComparer<T> thisComparer, bool replaceIfPresent)
@@ -1367,8 +1365,8 @@ namespace Loyc.Collections.Impl
 		/// <param name="other">The set whose members should be kept in this set.</param>
 		/// <returns>Returns the number of items that were removed.</returns>
 		/// <remarks>
-		/// This method is costly if 'other' is not a set; a temporary set will be 
-		/// constructed to answer the query. Also, this overload has the same subtle 
+		/// This method is costly if 'other' is not a set; a temporary set will be
+		/// constructed to answer the query. Also, this overload has the same subtle
 		/// assumption as the other overload.
 		/// </remarks>
 		public int IntersectWith(IEnumerable<T> other, IEqualityComparer<T> comparer)
@@ -1432,10 +1430,10 @@ namespace Loyc.Collections.Impl
 		/// present either in this set or in the other collection, but not both.</summary>
 		/// <param name="xorDuplicates">Controls this function's behavior in case
 		/// 'other' contains duplicates. If xorDuplicates is true, an even number
-		/// of duplicates has no overall effect and an odd number is treated the 
-		/// same as if there were a single instance of the item. Setting 
-		/// xorDuplicates to false is costly, since a temporary set is constructed 
-		/// in order to eliminate any duplicates. The same comparer is used for 
+		/// of duplicates has no overall effect and an odd number is treated the
+		/// same as if there were a single instance of the item. Setting
+		/// xorDuplicates to false is costly, since a temporary set is constructed
+		/// in order to eliminate any duplicates. The same comparer is used for
 		/// the temporary set as for this set.</param>
 		/// <remarks>Returns the change in set size (positive if items were added,
 		/// negative if items were removed)</remarks>
@@ -1535,23 +1533,23 @@ namespace Loyc.Collections.Impl
 			return false;
 		}
 
-		/// <summary>Returns true if all items in this set are present in the other set, 
+		/// <summary>Returns true if all items in this set are present in the other set,
 		/// and the other set has at least one item that is not in this set.</summary>
 		/// <remarks>
 		/// This implementation assumes that if the two sets use different
 		/// definitions of equality (different <see cref="IEqualityComparer{T}"/>s),
 		/// that neither set contains duplicates from the point of view of the other
-		/// set. If this rule is broken--meaning, if either of the sets were 
+		/// set. If this rule is broken--meaning, if either of the sets were
 		/// constructed with the comparer of the other set, that set would shrink--
-		/// then the results of this method are unreliable. If both sets use the 
+		/// then the results of this method are unreliable. If both sets use the
 		/// same comparer, though, you have nothing to worry about.</remarks>
 		public bool IsProperSubsetOf(ISet<T> other, int myExactCount) { return myExactCount < other.Count && IsSubsetOf(other, myExactCount); }
-		
-		/// <summary>Returns true if all items in this set are present in the other set, 
+
+		/// <summary>Returns true if all items in this set are present in the other set,
 		/// and the other set has at least one item that is not in this set.</summary>
 		/// <remarks>
-		/// This method is costly if 'other' is not a set; a temporary set will be 
-		/// constructed to answer the query. Also, this overload has the same subtle 
+		/// This method is costly if 'other' is not a set; a temporary set will be
+		/// constructed to answer the query. Also, this overload has the same subtle
 		/// assumption as the other overload.
 		/// </remarks>
 		public bool IsProperSubsetOf(IEnumerable<T> other, IEqualityComparer<T> comparer, int myExactCount)
@@ -1568,23 +1566,23 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
-		/// <summary>Returns true if all items in the other set are present in this set, 
+		/// <summary>Returns true if all items in the other set are present in this set,
 		/// and this set has at least one item that is not in the other set.</summary>
 		/// <remarks>
 		/// This implementation assumes that if the two sets use different
 		/// definitions of equality (different <see cref="IEqualityComparer{T}"/>s),
 		/// that neither set contains duplicates from the point of view of the other
-		/// set. If this rule is broken--meaning, if either of the sets were 
+		/// set. If this rule is broken--meaning, if either of the sets were
 		/// constructed with the comparer of the other set, that set would shrink--
-		/// then the results of this method are unreliable. If both sets use the 
+		/// then the results of this method are unreliable. If both sets use the
 		/// same comparer, though, you have nothing to worry about.</remarks>
 		public bool IsProperSupersetOf(ISet<T> other, IEqualityComparer<T> thisComparer, int myExactCount) { return myExactCount > other.Count && IsSupersetOf(other, thisComparer, myExactCount); }
-		
-		/// <summary>Returns true if all items in the other set are present in this set, 
+
+		/// <summary>Returns true if all items in the other set are present in this set,
 		/// and this set has at least one item that is not in the other set.</summary>
 		/// <remarks>
-		/// This method is costly if 'other' is not a set; a temporary set will be 
-		/// constructed to answer the query. Also, this overload has the same subtle 
+		/// This method is costly if 'other' is not a set; a temporary set will be
+		/// constructed to answer the query. Also, this overload has the same subtle
 		/// assumption as the other overload.
 		/// </remarks>
 		public bool IsProperSupersetOf(IEnumerable<T> other, IEqualityComparer<T> comparer, int myExactCount)
@@ -1614,16 +1612,16 @@ namespace Loyc.Collections.Impl
 		/// This implementation assumes that if the two sets use different
 		/// definitions of equality (different <see cref="IEqualityComparer{T}"/>s),
 		/// that neither set contains duplicates from the point of view of the other
-		/// set. If this rule is broken--meaning, if either of the sets were 
+		/// set. If this rule is broken--meaning, if either of the sets were
 		/// constructed with the comparer of the other set, that set would shrink--
-		/// then the results of this method are unreliable. If both sets use the 
+		/// then the results of this method are unreliable. If both sets use the
 		/// same comparer, though, you have nothing to worry about.</remarks>
 		public bool SetEquals(ISet<T> other, int myExactCount) { return myExactCount == other.Count && IsSubsetOf(other, myExactCount); }
 
 		/// <summary>Returns true if this set and the other set have the same items.</summary>
 		/// <remarks>
-		/// This method is costly if 'other' is not a set; a temporary set will be 
-		/// constructed to answer the query. Also, this overload has the same subtle 
+		/// This method is costly if 'other' is not a set; a temporary set will be
+		/// constructed to answer the query. Also, this overload has the same subtle
 		/// assumption as the other overload.
 		/// </remarks>
 		public bool SetEquals(IEnumerable<T> other, IEqualityComparer<T> comparer, int myExactCount)
@@ -1655,14 +1653,14 @@ namespace Loyc.Collections.Impl
 
 		#endregion
 
-		/// <summary>Measures the total size of all objects allocated to this 
-		/// collection, in bytes, including the size of <see cref="InternalSet{T}"/> 
+		/// <summary>Measures the total size of all objects allocated to this
+		/// collection, in bytes, including the size of <see cref="InternalSet{T}"/>
 		/// itself (which is one word).</summary>
-		/// <param name="sizeOfT">Size of each T. C# provides no way to get this 
-		/// number so it must be supplied as a parameter. If T is a reference type 
-		/// such as String, IntPtr.Size tells you the size of each reference; 
-		/// please note that this method is does not look "inside" each T, it 
-		/// just measures the "shallow" size of the collection. For instance, if 
+		/// <param name="sizeOfT">Size of each T. C# provides no way to get this
+		/// number so it must be supplied as a parameter. If T is a reference type
+		/// such as String, IntPtr.Size tells you the size of each reference;
+		/// please note that this method is does not look "inside" each T, it
+		/// just measures the "shallow" size of the collection. For instance, if
 		/// this is a set of strings, then <c>CountMemory(IntPtr.Size)</c> is
 		/// the size of the set including the references to the strings, but not
 		/// including the strings themselves.</param>
@@ -1672,7 +1670,7 @@ namespace Loyc.Collections.Impl
 			InternalSetStats stats;
 			return CountMemory(sizeOfT, out stats);
 		}
-		/// <summary>Measures the total size of all objects allocated to this 
+		/// <summary>Measures the total size of all objects allocated to this
 		/// collection, in bytes, and counts the number of nodes of different
 		/// types.</summary>
 		public int CountMemory(int sizeOfT, out InternalSetStats stats)
@@ -1694,12 +1692,12 @@ namespace Loyc.Collections.Impl
 		public int MaxDepthNodes;
 		/// <summary>Number of items in the set.</summary>
 		public int ItemCount;
-		/// <summary>Number of items that are in overflow lists. Note that if a 
-		/// single item is in an overflow list, it implies that five items share 
-		/// the same hashcode; larger numbers than 1 are harder to interpret, 
+		/// <summary>Number of items that are in overflow lists. Note that if a
+		/// single item is in an overflow list, it implies that five items share
+		/// the same hashcode; larger numbers than 1 are harder to interpret,
 		/// but generally.</summary>
 		public int ItemsInOverflow;
-		
+
 		//public int OneChildCases;
 	}
 

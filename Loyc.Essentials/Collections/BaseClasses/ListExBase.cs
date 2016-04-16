@@ -7,7 +7,6 @@ namespace Loyc.Collections.Impl
 {
 	/// <summary>A base class for classes that wish to implement <see cref="IListEx{T}"/>.
 	/// Provides default implementations for most of the methods.</summary>
-	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	public abstract class ListExBase<T> : ListSourceBase<T>, IListEx<T>
 	{

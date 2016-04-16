@@ -11,19 +11,18 @@ namespace Loyc.Collections
 	/// <summary>An immutable set.</summary>
 	/// <remarks>
 	/// This is the immutable version of <see cref="MSet{T}"/>. It does not
-	/// allow changes to the set, but it provides operators (&amp;, |, ^, -) for 
-	/// intersecting, merging, and subtracting sets, and it can be converted to 
+	/// allow changes to the set, but it provides operators (&amp;, |, ^, -) for
+	/// intersecting, merging, and subtracting sets, and it can be converted to
 	/// a mutable <see cref="MSet{T}"/> in O(1) time. You can also add
 	/// single items to the set using operators + and -.
 	/// <para/>
-	/// For more information, please read the documentation of <see cref="Set{T}"/> 
+	/// For more information, please read the documentation of <see cref="Set{T}"/>
 	/// and <see cref="Impl.InternalSet{T}"/>.
 	/// <para/>
 	/// Performance warning: GetHashCode() XORs the hashcodes of all items in the
-	/// set, while Equals() is a synonym for SetEquals(). Be aware that these 
+	/// set, while Equals() is a synonym for SetEquals(). Be aware that these
 	/// methods are very slow for large sets.
 	/// </remarks>
-	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
 	[DebuggerDisplay("Count = {Count}")]
 	public struct Set<T> : ISetImm<T>, ISetImm<T, Set<T>>, ICollection<T>, IEquatable<Set<T>> //, ICount
@@ -102,7 +101,7 @@ namespace Loyc.Collections
 		public Enumerator GetEnumerator() { return new Enumerator(_set); }
 
 		/// <summary>Enumerator for <see cref="MSet{T}"/>.</summary>
-		/// <remarks>This is a wrapper of <see cref="Impl.InternalSet{T}.Enumerator"/> 
+		/// <remarks>This is a wrapper of <see cref="Impl.InternalSet{T}.Enumerator"/>
 		/// that blocks editing functionality.</remarks>
 		public struct Enumerator : IEnumerator<T>
 		{
@@ -182,7 +181,7 @@ namespace Loyc.Collections
 		ISetImm<T> ISetOperations<T, IEnumerable<T>, ISetImm<T>>.Intersect(IEnumerable<T> other) { return Intersect(other); }
 		ISetImm<T> ISetOperations<T, IEnumerable<T>, ISetImm<T>>.Except(IEnumerable<T> other) { return Except(other); }
 		ISetImm<T> ISetOperations<T, IEnumerable<T>, ISetImm<T>>.Xor(IEnumerable<T> other) { return Xor(other); }
-		
+
 		public Set<T> With(T item)
 		{
 			Debug.Assert(_set.IsRootFrozen);
@@ -281,9 +280,9 @@ namespace Loyc.Collections
 
 		#region Operators: & | - ^ +
 		// Note that if the two operands use different comparers or have different
-		// types, the comparer and type of the left operand propagates to the 
-		// result. When mixing Set<T> and MSet<T>, it is advisable to use Set<T> 
-		// as the left-hand argument because the left-argument is always 
+		// types, the comparer and type of the left operand propagates to the
+		// result. When mixing Set<T> and MSet<T>, it is advisable to use Set<T>
+		// as the left-hand argument because the left-argument is always
 		// freeze-cloned, which is a no-op for Set<T>.
 
 		public static Set<T> operator &(Set<T> a, Set<T> b) { return a.Intersect(b._set, b.Comparer); }
@@ -310,7 +309,7 @@ namespace Loyc.Collections
 			return new MSet<T>(this.InternalSet, this.Comparer, this.Count);
 		}
 
-		/// <summary>Returns a new set that contains only items that match the 
+		/// <summary>Returns a new set that contains only items that match the
 		/// specified predicate (i.e. for which the predicate returns true).</summary>
 		public Set<T> Where(Predicate<T> match)
 		{
@@ -324,7 +323,7 @@ namespace Loyc.Collections
 			return result;
 		}
 
-		/// <summary>Measures the total size of all objects allocated to this 
+		/// <summary>Measures the total size of all objects allocated to this
 		/// collection, in bytes, including the size of this object itself; see
 		/// <see cref="Impl.InternalSet{T}.CountMemory"/>.</summary>
 		public long CountMemory(int sizeOfT)

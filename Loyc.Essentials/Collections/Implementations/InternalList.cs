@@ -8,7 +8,7 @@ namespace Loyc.Collections.Impl
 	using System.Linq;
 	using Loyc.Math;
 
-	/// <summary>A compact auto-enlarging array structure that is intended to be 
+	/// <summary>A compact auto-enlarging array structure that is intended to be
 	/// used within other data structures. It should only be used internally in
 	/// "private" or "protected" members of low-level code.
 	/// </summary>
@@ -16,35 +16,34 @@ namespace Loyc.Collections.Impl
 	/// An <a href="http://core.loyc.net/collections/internal-list.html">article</a>
 	/// about this class is available.
 	/// <para/>
-	/// InternalList is a struct, not a class, in order to save memory; and for 
-	/// maximum performance, it asserts rather than throwing an exception 
-	/// when an incorrect array index is used. Besides that, it has an 
-	/// InternalArray property that provides access to the internal array. 
-	/// For all these reasons one should not expose it in a public API, and 
+	/// InternalList is a struct, not a class, in order to save memory; and for
+	/// maximum performance, it asserts rather than throwing an exception
+	/// when an incorrect array index is used. Besides that, it has an
+	/// InternalArray property that provides access to the internal array.
+	/// For all these reasons one should not expose it in a public API, and
 	/// it should only be used when performance trumps all other concerns.
 	/// <para/>
-	/// Passing this structure by value is dangerous because changes to a copy 
+	/// Passing this structure by value is dangerous because changes to a copy
 	/// of the structure may or may not be reflected in the original list. It's
 	/// best not to pass it around at all, but if you must pass it, pass it by
 	/// reference.
 	/// <para/>
-	/// Also, do not use the default contructor. Always specify an initial 
-	/// capacity or copy InternalList.Empty so that _array gets a value. 
-	/// This is required because methods such as Add(), Insert() and Resize() 
+	/// Also, do not use the default contructor. Always specify an initial
+	/// capacity or copy InternalList.Empty so that _array gets a value.
+	/// This is required because methods such as Add(), Insert() and Resize()
 	/// assume _array is not null.
 	/// <para/>
 	/// InternalList has one nice thing that List(of T) lacks: a <see cref="Resize"/>
-	/// method and an equivalent Count setter. Which dork at Microsoft decided no 
-	/// one should be allowed to set the list length directly? This type also 
-	/// provides a handy <see cref="Last"/> property and a <see cref="Pop"/> 
+	/// method and an equivalent Count setter. Which dork at Microsoft decided no
+	/// one should be allowed to set the list length directly? This type also
+	/// provides a handy <see cref="Last"/> property and a <see cref="Pop"/>
 	/// method to respectively get or remove the last item.
 	/// <para/>
-	/// Finally, alongside InternalList(T), the static class InternalList comes 
+	/// Finally, alongside InternalList(T), the static class InternalList comes
 	/// with some static methods (CopyToNewArray, Insert, RemoveAt, Move) to help
-	/// manage raw arrays. You might want to use these in a data structure 
+	/// manage raw arrays. You might want to use these in a data structure
 	/// implementation even if you choose not to use InternalList(T) instances.
 	/// </remarks>
-	[Serializable]
 	public struct InternalList<T> : IListAndListSource<T>, IListRangeMethods<T>, ICloneable<InternalList<T>>//, IGetIteratorSlice<T>
 	{
 		public static readonly T[] EmptyArray = new T[0];
@@ -84,7 +83,7 @@ namespace Loyc.Collections.Impl
 		}
 
 		/// <summary>Gets or sets the array length.</summary>
-		/// <remarks>Changing this property requires O(Count) time and temporary 
+		/// <remarks>Changing this property requires O(Count) time and temporary
 		/// space. Attempting to set the capacity lower than Count has no effect.
 		/// </remarks>
 		public int Capacity
@@ -111,14 +110,14 @@ namespace Loyc.Collections.Impl
 			Capacity = InternalList.NextLargerSize(_array.Length);
 		}
 
-		/// <summary>Makes the list larger or smaller, depending on whether 
+		/// <summary>Makes the list larger or smaller, depending on whether
 		/// <c>newSize</c> is larger or smaller than <see cref="Count"/>.</summary>
-		/// <param name="allowReduceCapacity">If this is true, and the new size is 
+		/// <param name="allowReduceCapacity">If this is true, and the new size is
 		/// smaller than one quarter the current <see cref="Capacity"/>, the array
-		/// is reallocated to a smaller size. If this parameter is false, the array 
+		/// is reallocated to a smaller size. If this parameter is false, the array
 		/// is never reallocated when shrinking the list.</param>
 		/// <param name="newSize">New value of <see cref="Count"/>. If the Count
-		/// increases, copies of default(T) are added to the end of the the list; 
+		/// increases, copies of default(T) are added to the end of the the list;
 		/// otherwise items are removed from the end of the list.</param>
 		public void Resize(int newSize) { Resize(newSize, true); }
 		/// <inheritdoc cref="Resize(int)"/>
@@ -181,7 +180,7 @@ namespace Loyc.Collections.Impl
 		{
 			_array = InternalList.InsertRangeHelper(index, count, _array, _count);
 			_count += count;
-			
+
 			int stop = index + count;
 			foreach (var item in items)
 			{
@@ -227,7 +226,7 @@ namespace Loyc.Collections.Impl
 			throw new ArgumentException("InsertRange: Input collection's Count is different from the number of items enumerated");
 		}
 
-		/// <summary>Clears the list and frees the memory used by the list. Can 
+		/// <summary>Clears the list and frees the memory used by the list. Can
 		/// also be used to initialize a list whose constructor was never called.</summary>
 		public void Clear()
 		{
@@ -247,7 +246,7 @@ namespace Loyc.Collections.Impl
         public T this[int index]
 		{
 			[DebuggerStepThrough]
-			get { 
+			get {
 				Debug.Assert((uint)index < (uint)_count);
 				return _array[index];
 			}
@@ -451,7 +450,7 @@ namespace Loyc.Collections.Impl
 			Array.Copy(_array, a, _count);
 			return a;
 		}
-		
+
 		public static T[] CopyToNewArray<T>(T[] array)
 		{
 			return CopyToNewArray(array, array.Length, array.Length);
@@ -462,7 +461,7 @@ namespace Loyc.Collections.Impl
 			for (int i = 0; i < array.Length; i++)
 				array[i] = value;
 		}
-		
+
 		public static void Fill<T>(T[] array, int start, int count, T value)
 		{
 			if (count > 0)
@@ -478,7 +477,7 @@ namespace Loyc.Collections.Impl
 				}
 			}
 		}
-		
+
 		public static int BinarySearch<T>(T[] array, int count, T k, Comparer<T> comp, bool lowerBound)
 		{
 			int low = 0;
@@ -511,14 +510,14 @@ namespace Loyc.Collections.Impl
 		/// <param name="_array">Array to search</param>
 		/// <param name="_count">Number of elements used in the array</param>
 		/// <param name="k">A key to compare with elements of the array</param>
-		/// <param name="compare">Lambda function that knows how to compare Ts with 
-		/// Ks (T and K can be the same). It is passed a series of elements from 
-		/// the array. It must return 0 if the element has the desired value, 1 if 
-		/// the supplied element is higher than desired, and -1 if it is lower than 
+		/// <param name="compare">Lambda function that knows how to compare Ts with
+		/// Ks (T and K can be the same). It is passed a series of elements from
+		/// the array. It must return 0 if the element has the desired value, 1 if
+		/// the supplied element is higher than desired, and -1 if it is lower than
 		/// desired.</param>
 		/// <param name="lowerBound">Whether to find the "lower bound" in case there
-		/// are duplicates in the list. If duplicates exist of the search key k, the 
-		/// lowest index of a matching duplicate is returned. This search mode may be 
+		/// are duplicates in the list. If duplicates exist of the search key k, the
+		/// lowest index of a matching duplicate is returned. This search mode may be
 		/// slightly slower when a match exists.</param>
 		/// <returns>The index of the matching array entry, if found. If no exact
 		/// match was found, this method returns the bitwise complement of an
@@ -560,15 +559,15 @@ namespace Loyc.Collections.Impl
 			return low ^ invert;
 		}
 
-		/// <summary>A binary search function that knows nothing about the list 
+		/// <summary>A binary search function that knows nothing about the list
 		/// being searched.</summary>
 		/// <typeparam name="Anything">Any data type relevant to the caller.</typeparam>
 		/// <param name="data">State information to be passed to compare()</param>
 		/// <param name="count">Number of items in the list being searched</param>
-		/// <param name="compare">Comparison method that is given the current index 
+		/// <param name="compare">Comparison method that is given the current index
 		/// to examine and the state parameter "data".</param>
 		/// <param name="lowerBound">Whether to find the "lower bound" in case there
-		/// are duplicates in the list. If duplicates exist of the search key k 
+		/// are duplicates in the list. If duplicates exist of the search key k
 		/// exist, the lowest index of a matching duplicate is returned. This
 		/// search mode may be slightly slower when a match exists.</param>
 		/// <returns>The index of the matching index, if found. If no exact
@@ -600,7 +599,7 @@ namespace Loyc.Collections.Impl
 
 			return low ^ invert;
 		}
-		
+
 		/// <summary>As an alternative to the typical enlarging pattern of doubling
 		/// the array size when it overflows, this function proposes a 75% size
 		/// increase instead (100% when the array is small), while ensuring that
@@ -614,27 +613,27 @@ namespace Loyc.Collections.Impl
 		/// <para/>
 		/// 75% size increases require 23.9% more allocations than size doubling
 		/// (1.75 to the 1.239th power is about 2.0), but memory utilization is
-		/// increased. With size doubling, the average list uses 2/3 of its 
+		/// increased. With size doubling, the average list uses 2/3 of its
 		/// entries, but with this resizing pattern, the average list uses 72.72%
 		/// of its entries. The average size of a list is 8.3% lower. Originally
-		/// I used 50% size increases, but they required 71% more allocations, 
+		/// I used 50% size increases, but they required 71% more allocations,
 		/// which seemed like too much.
 		/// </remarks>
 		public static int NextLargerSize(int than)
 		{
 			return ((than << 1) - (than >> 2) + 2) & ~1;
 		}
-		/// <summary>Same as <see cref="NextLargerSize(int)"/>, but allows you to 
-		/// specify a capacity limit, to avoid wasting memory when a collection has 
+		/// <summary>Same as <see cref="NextLargerSize(int)"/>, but allows you to
+		/// specify a capacity limit, to avoid wasting memory when a collection has
 		/// a known maximum size.</summary>
 		/// <param name="than">Return value will be larger than this number.</param>
 		/// <param name="capacityLimit">Maximum value to return. This parameter is
 		/// ignored if it than >= capacityLimit.</param>
 		/// <returns>Produces the same result as <see cref="NextLargerSize(int)"/>
 		/// unless the return value would be near capacityLimit (and capacityLimit
-		/// > than). If the return value would be more than capacityLimit, 
+		/// > than). If the return value would be more than capacityLimit,
 		/// capacityLimit is returned instead. If the return value would be slightly
-		/// less than capacityLimit (within 20%) then capacityLimit is returned, 
+		/// less than capacityLimit (within 20%) then capacityLimit is returned,
 		/// to ensure that another reallocation will not be required later.</returns>
 		public static int NextLargerSize(int than, int capacityLimit)
 		{
@@ -680,7 +679,7 @@ namespace Loyc.Collections.Impl
 			}
 			return array;
 		}
-		
+
 		public static int RemoveAt<T>(int index, T[] array, int count)
 		{
 			Debug.Assert((uint)index < (uint)count);
@@ -690,7 +689,7 @@ namespace Loyc.Collections.Impl
 			array[count - 1] = default(T);
 			return count - 1;
 		}
-		
+
 		public static int RemoveAt<T>(int index, int removeCount, T[] array, int count)
 		{
 			Debug.Assert((uint)index <= (uint)count);
@@ -723,7 +722,7 @@ namespace Loyc.Collections.Impl
 				array[to] = saved;
 			}
 		}
-		
+
 		internal const int QuickSortThreshold = 9;
 		internal const int QuickSortMedianThreshold = 15;
 
@@ -732,20 +731,20 @@ namespace Loyc.Collections.Impl
 		/// Normally one uses Array.Sort for sorting arrays.
 		/// This method exists because there is no Array.Sort overload that
 		/// accepts both a Comparison and a range (index, count), nor does the
-		/// .NET framework provide access to its internal adapter that converts 
+		/// .NET framework provide access to its internal adapter that converts
 		/// Comparison to IComparer.
 		/// <para/>
 		/// This quicksort algorithm uses a best-of-three pivot so that it remains
-		/// performant (fast) if the input is already sorted. It is designed to 
+		/// performant (fast) if the input is already sorted. It is designed to
 		/// perform reasonably well in case the data contains many duplicates (not
-		/// verified). It is also designed to avoid using excessive stack space if 
+		/// verified). It is also designed to avoid using excessive stack space if
 		/// a worst-case input occurs that requires O(N^2) time.
 		/// </remarks>
 		public static void Sort<T>(T[] array, int index, int count, Comparison<T> comp)
 		{
 			Debug.Assert((uint)index <= (uint)array.Length);
 			Debug.Assert((uint)count <= (uint)array.Length - (uint)index);
-			
+
 			for (;;) {
 				if (count < QuickSortThreshold)
 				{
@@ -786,8 +785,8 @@ namespace Loyc.Collections.Impl
 				// Finally, put the pivot element in the middle (at iOut)
 				MathEx.Swap(ref array[iBegin], ref array[iOut]);
 
-				// Now we need to sort the left and right sub-partitions. Use a 
-				// recursive call only to sort the smaller partition, in order to 
+				// Now we need to sort the left and right sub-partitions. Use a
+				// recursive call only to sort the smaller partition, in order to
 				// guarantee O(log N) stack space usage.
 				int rightSize = count - 1 - leftSize;
 				if (leftSize < rightSize)
@@ -823,7 +822,7 @@ namespace Loyc.Collections.Impl
 		}
 
 		/// <summary>Performs an insertion sort.</summary>
-		/// <remarks>The insertion sort is a stable sort algorithm that is slow in 
+		/// <remarks>The insertion sort is a stable sort algorithm that is slow in
 		/// general (O(N^2)). It should be used only when (a) the list to be sorted
 		/// is short (less than about 20 elements) or (b) the list is very nearly
 		/// sorted already.</remarks>

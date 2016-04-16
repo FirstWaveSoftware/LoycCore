@@ -4,7 +4,7 @@ using Loyc.Math;
 namespace Loyc.Geometry
 {
 	/// <summary>A 2D point (X-Y pair) structure.</summary>
-	/// <remarks>Although this structure contains operators such as + and -, their 
+	/// <remarks>Although this structure contains operators such as + and -, their
 	/// performance is suboptimal due to limitations of C#. The <see cref="PointMath"/>
 	/// class of Loyc.Utilities.dll contains extension methods such as Add() and Sub()
 	/// that perform faster on common coordindate types such as int and double.</remarks>
@@ -23,11 +23,11 @@ namespace Loyc.Geometry
 		T _x, _y;
 		public T X { get { return _x; } set { _x = value; } }
 		public T Y { get { return _y; } set { _y = value; } }
-	
+
 		public override bool Equals(object other) { return other is Point<T> && ((Point<T>)other) == this; }
 		public override int GetHashCode() { return _x.GetHashCode() ^ (_y.GetHashCode() << 1); }
 		public override string ToString() { return string.Format("({0},{1})", _x, _y); }
-		
+
 		public Point<T> New(T x, T y) { return new Point<T>(x, y); }
 		IPoint<T> INewPoint<IPoint<T>, T>.New(T x, T y) { return new Point<T>(x, y); }
 
@@ -37,10 +37,7 @@ namespace Loyc.Geometry
 		public static explicit operator Point<long>(Point<T> p) { return new Point<long>(p._x.ToInt64(null), p._y.ToInt64(null)); }
 		public static explicit operator Point<float>(Point<T> p) { return new Point<float>(p._x.ToSingle(null), p._y.ToSingle(null)); }
 		public static implicit operator Point<double>(Point<T> p) { return new Point<double>(p._x.ToDouble(null), p._y.ToDouble(null)); }
-		public static explicit operator System.Drawing.Point(Point<T> p) { return new System.Drawing.Point(p._x.ToInt32(null), p._y.ToInt32(null)); }
-		public static explicit operator System.Drawing.PointF(Point<T> p) { return new System.Drawing.PointF(p._x.ToInt32(null), p._y.ToInt32(null)); }
-		public static explicit operator System.Windows.Point(Point<T> p) { return new System.Windows.Point(p._x.ToInt32(null), p._y.ToInt32(null)); }
-		
+
 		public static Point<T>  operator+(Point<T> a, Vector<T> b) { return new Point<T>(m.Add(a.X,b.X), m.Add(a.Y,b.Y)); }
 		public static Point<T>  operator+(Vector<T> a, Point<T> b) { return new Point<T>(m.Add(a.X,b.X), m.Add(a.Y,b.Y)); }
 		public static Point<T>  operator-(Point<T> a, Vector<T> b) { return new Point<T>(m.Sub(a.X,b.X), m.Sub(a.Y,b.Y)); }
@@ -75,11 +72,11 @@ namespace Loyc.Geometry
 		public T X { get { return _x; } set { _x = value; } }
 		public T Y { get { return _y; } set { _y = value; } }
 		public T Z { get { return _z; } set { _z = value; } }
-	
+
 		public override bool Equals(object other) { return other is Point3<T> && ((Point3<T>)other) == this; }
 		public override int GetHashCode() { return (_x.GetHashCode() ^ _z.GetHashCode()) ^ (_y.GetHashCode() << 1); }
 		public override string ToString() { return string.Format("({0},{1},{2})", _x, _y, _z); }
-		
+
 		public Point3<T> New(T x, T y, T z) { return new Point3<T>(x, y, z); }
 		IPoint3<T> INewPoint3<IPoint3<T>, T>.New(T x, T y, T z) { return new Point3<T>(x, y, z); }
 
@@ -89,7 +86,7 @@ namespace Loyc.Geometry
 		public static explicit operator Point3<long>(Point3<T> p) { return new Point3<long>(p._x.ToInt64(null), p._y.ToInt64(null), p._z.ToInt64(null)); }
 		public static explicit operator Point3<float>(Point3<T> p) { return new Point3<float>(p._x.ToSingle(null), p._y.ToSingle(null), p._z.ToSingle(null)); }
 		public static explicit operator Point3<double>(Point3<T> p) { return new Point3<double>(p._x.ToDouble(null), p._y.ToDouble(null), p._z.ToDouble(null)); }
-		
+
 		public static Point3<T>  operator+(Point3<T> a, Vector3<T> b) { return new Point3<T>(m.Add(a.X,b.X), m.Add(a.Y,b.Y), m.Add(a.Z,b.Z)); }
 		public static Point3<T>  operator+(Vector3<T> a, Point3<T> b) { return new Point3<T>(m.Add(a.X,b.X), m.Add(a.Y,b.Y), m.Add(a.Z,b.Z)); }
 		public static Point3<T>  operator-(Point3<T> a, Vector3<T> b) { return new Point3<T>(m.Sub(a.X,b.X), m.Sub(a.Y,b.Y), m.Sub(a.Z,b.Z)); }
@@ -102,7 +99,7 @@ namespace Loyc.Geometry
 		public static bool operator== (Point3<T> a, Point3<T> b) { return a.X.Equals(b.X) && a.Y.Equals(b.Y) && a.Z.Equals(b.Z); }
 		public static bool operator!= (Point3<T> a, Point3<T> b) { return !a.X.Equals(b.X) || !a.Y.Equals(b.Y) || !a.Z.Equals(b.Z); }
 		public bool Equals(Point3<T> other) { return this == other; }
-		
+
 		public LineSegment3<T> To(Point3<T> other) { return new LineSegment3<T>(this, other); }
 	}
 }

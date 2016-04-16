@@ -3,7 +3,7 @@
  * User: Pook
  * Date: 4/12/2011
  * Time: 8:53 PM
- * 
+ *
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
 namespace Loyc.Collections
@@ -29,10 +29,10 @@ namespace Loyc.Collections
 	/// Objects of this type are returned from <see cref="ListExt.Slice{T}"/>
 	/// </summary>
 	/// <remarks>
-	/// ListSlice provides both a <see cref="IList{T}"/> interface and a 
+	/// ListSlice provides both a <see cref="IList{T}"/> interface and a
 	/// <see cref="IRange{T}"/> interface, and it is important not to confuse them.
 	/// The <see cref="IList{T}"/> interface allows you to insert and remove items
-	/// from both the original list and the slice simultaneously. The 
+	/// from both the original list and the slice simultaneously. The
 	/// <see cref="IRange{T}"/> interface allows you to "Pop" items from the front
 	/// and back, but this reduces the length of the slice only, not the original
 	/// list.
@@ -47,13 +47,13 @@ namespace Loyc.Collections
 		/// <summary>Initializes a slice.</summary>
 		/// <exception cref="ArgumentException">The start index was below zero.</exception>
 		/// <remarks>The (start, count) range is allowed to be invalid, as long
-		/// as 'start' and 'count' are zero or above. 
+		/// as 'start' and 'count' are zero or above.
 		/// <ul>
-		/// <li>If 'start' is above the original Count, the Count of the new slice 
+		/// <li>If 'start' is above the original Count, the Count of the new slice
 		/// is set to zero.</li>
 		/// <li>if (start + count) is above the original Count, the Count of the new
-		/// slice is reduced to <c>list.Count - start</c>. Note that the Count of 
-		/// the slice will not increase if the list expands after the slice is 
+		/// slice is reduced to <c>list.Count - start</c>. Note that the Count of
+		/// the slice will not increase if the list expands after the slice is
 		/// created.</li>
 		/// </ul>
 		/// </remarks>
@@ -176,8 +176,8 @@ namespace Loyc.Collections
 
 		/// <summary>Returns the original list.</summary>
 		/// <remarks>Ideally, to protect the list there would be no way to access
-		/// its contents beyond the boundaries of the slice. However, the 
-		/// reality in .NET today is that many methods accept "slices" in the 
+		/// its contents beyond the boundaries of the slice. However, the
+		/// reality in .NET today is that many methods accept "slices" in the
 		/// form of a triple (list, start index, count). In order to call such an
 		/// old-style API using a slice, one must be able to extract the internal
 		/// list and start index values.</remarks>
@@ -191,7 +191,7 @@ namespace Loyc.Collections
 		{
 			get { return _list.IsReadOnly; }
 		}
-		
+
 		public int IndexOf(T item)
 		{
 			EqualityComparer<T> comparer = EqualityComparer<T>.Default;
@@ -201,38 +201,38 @@ namespace Loyc.Collections
 					return i - _start;
 			return -1;
 		}
-		
+
 		public void Insert(int index, T item)
 		{
 			if ((uint)index > (uint)_count) throw new IndexOutOfRangeException();
 			_list.Insert(_start + index, item);
 			++_count;
 		}
-		
+
 		public void RemoveAt(int index)
 		{
 			if ((uint)index >= (uint)_count) throw new IndexOutOfRangeException();
 			_list.RemoveAt(_start + index);
 			--_count;
 		}
-		
+
 		public void Add(T item)
 		{
 			_list.Insert(_start + _count, item);
 			++_count;
 		}
-		
+
 		public void Clear()
 		{
 			for (int i = Math.Min(_start+_count, _list.Count)-1; i >= _start; i--)
 				_list.RemoveAt(i);
 		}
-		
+
 		public bool Contains(T item)
 		{
 			return IndexOf(item) > -1;
 		}
-		
+
 		public void CopyTo(T[] array, int arrayIndex)
 		{
 			int space = array.Length - arrayIndex;
@@ -243,11 +243,11 @@ namespace Loyc.Collections
 				else
 					throw new ArgumentException(Localize.From("CopyTo: array is too small ({0} < {1})", space, count));
 			}
-			
+
 			for (int i = 0; i < count; i++)
 				array[arrayIndex + i] = this[i];
 		}
-		
+
 		public bool Remove(T item)
 		{
 			int i = IndexOf(item);
@@ -257,7 +257,7 @@ namespace Loyc.Collections
 			}
 			return false;
 		}
-		
+
 		public bool TrySet(int index, T value)
 		{
 			if ((uint)index < (uint)_count) {
@@ -288,15 +288,14 @@ namespace Loyc.Collections
 	}
 
 #if false
-	[Serializable]
 	public class ListSlice<T> : WrapperBase<IList<T>>, IListEx<T>
 	{
 		/// <summary>Initializes a ListSourceSlice object which provides a view on part of another list.</summary>
 		/// <param name="list">A list to wrap (must not be null).</param>
 		/// <param name="start">An index into the original list. this[0] will refer to that index.
 		/// This cannot be negative, but it can be beyond the end of the list.</param>
-		/// <param name="count">The number of elements to allow access to. If 
-		/// start+length exceeds the list size, length is reduced immediately. 
+		/// <param name="count">The number of elements to allow access to. If
+		/// start+length exceeds the list size, length is reduced immediately.
 		/// Thus, if the original list expands after the slice is created, the
 		/// slice's Count never increases to match the original list.</param>
 		/// <exception cref="IndexOutOfRangeException">'start' or 'length' was negative.</exception>
@@ -311,7 +310,7 @@ namespace Loyc.Collections
 		}
 
 		protected int _start, _count;
-		
+
 		public T this[int index]
 		{
 			get {
@@ -361,8 +360,8 @@ namespace Loyc.Collections
 			[DebuggerStepThrough]
 			get { return _obj; }
 		}
-		
-		/// <summary>Returns a sub-slice of this slice. This method cannot be used 
+
+		/// <summary>Returns a sub-slice of this slice. This method cannot be used
 		/// to expand the range of the original slice.</summary>
 		public ListSlice<T> Slice(int start, int length)
 		{
@@ -377,12 +376,12 @@ namespace Loyc.Collections
 		{
 			return new Slice_<T>(this, start, count);
 		}
-		
+
 		public bool IsReadOnly
 		{
 			get { return _obj.IsReadOnly; }
 		}
-		
+
 		public int IndexOf(T item)
 		{
 			EqualityComparer<T> comparer = EqualityComparer<T>.Default;
@@ -392,36 +391,36 @@ namespace Loyc.Collections
 					return i - _start;
 			return -1;
 		}
-		
+
 		public void Insert(int index, T item)
 		{
 			_obj.Insert(_start + index, item);
 			++_count;
 		}
-		
+
 		public void RemoveAt(int index)
 		{
 			_obj.RemoveAt(_start + index);
 			--_count;
 		}
-		
+
 		public void Add(T item)
 		{
 			_obj.Insert(_start + _count, item);
 			++_count;
 		}
-		
+
 		public void Clear()
 		{
 			for (int i = Math.Min(_start+_count, _obj.Count)-1; i >= _start; i--)
 				_obj.RemoveAt(i);
 		}
-		
+
 		public bool Contains(T item)
 		{
 			return IndexOf(item) > -1;
 		}
-		
+
 		public void CopyTo(T[] array, int arrayIndex)
 		{
 			int space = array.Length - arrayIndex;
@@ -432,11 +431,11 @@ namespace Loyc.Collections
 				else
 					throw new ArgumentException(Localize.From("CopyTo: array is too small ({0} < {1})", space, count));
 			}
-			
+
 			for (int i = 0; i < count; i++)
 				array[arrayIndex + i] = this[i];
 		}
-		
+
 		public bool Remove(T item)
 		{
 			int i = IndexOf(item);
@@ -446,7 +445,7 @@ namespace Loyc.Collections
 			}
 			return false;
 		}
-		
+
 		public bool TrySet(int index, T value)
 		{
 			if ((uint)index < (uint)_count) {

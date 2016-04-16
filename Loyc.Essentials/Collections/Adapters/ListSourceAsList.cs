@@ -3,7 +3,7 @@
  * User: Pook
  * Date: 4/10/2011
  * Time: 9:04 AM
- * 
+ *
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
 using System;
@@ -30,9 +30,8 @@ namespace Loyc.Collections
 		}
 	}
 
-	/// <summary>Adapter: a read-only wrapper that implements IList(T) and 
+	/// <summary>Adapter: a read-only wrapper that implements IList(T) and
 	/// IListSource(T), returned from <see cref="LCExt.AsList{T}"/>.</summary>
-	[Serializable]
 	public sealed class ListSourceAsList<T> : WrapperBase<IListSource<T>>, IListAndListSource<T>
 	{
 		public ListSourceAsList(IListSource<T> obj) : base(obj) { }
@@ -101,11 +100,11 @@ namespace Loyc.Collections
 		}
 		IRange<T> IListSource<T>.Slice(int start, int count)
 		{
-			return Slice(start, count); 
+			return Slice(start, count);
 		}
 		public Slice_<T> Slice(int start, int count)
 		{
-			return new Slice_<T>(_obj, start, count); 
+			return new Slice_<T>(_obj, start, count);
 		}
 	}
 }

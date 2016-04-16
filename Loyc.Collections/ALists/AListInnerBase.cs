@@ -7,18 +7,16 @@
 	using System.Diagnostics;
 
 	/// <summary>Internal implementation class. Shared base class of internal nodes
-	/// for <see cref="AList{T}"/>, <see cref="SparseAList{T}"/>, <see cref="BList{T}"/>, 
+	/// for <see cref="AList{T}"/>, <see cref="SparseAList{T}"/>, <see cref="BList{T}"/>,
 	/// <see cref="BMultiMap{K,V}"/> and <see cref="BDictionary{K,V}"/>.</summary>
-	[Serializable]
 	public abstract class AListInnerBase<K, T> : AListNode<K, T>
 	{
 		public const int DefaultMaxNodeSize = 32;
 
-		[Serializable]
 		[DebuggerDisplay("Index = {Index}, Node = {Node}")]
 		protected struct Entry
 		{
-			// Normally this is the base index of the items in Node (the first entry 
+			// Normally this is the base index of the items in Node (the first entry
 			// uses Index differently; see documentation of _children)
 			public uint Index;
 			// Child node
@@ -113,24 +111,24 @@
 				for (int i = i0+1; i < iN; i++)
 				{
 					AListNode<K, T> childI = original._children[i].Node;
-					// Freeze child because it will be shared between the original 
+					// Freeze child because it will be shared between the original
 					// list and the section being copied
 					childI.Freeze();
 					_children[i-i0] = new Entry { Node = childI, Index = offset };
 					offset += childI.TotalCount;
 				}
 				_children[iN-i0].Index = offset;
-		
+
 				// Finally, if the first/last node is undersized, redistribute items.
 				// Note: we can set the 'tob' parameter to null because this
-				// constructor is called by CopySection, which creates an 
+				// constructor is called by CopySection, which creates an
 				// independent AList that does not have an indexer.
 				while (_childCount > 1 && _children[0].Node.IsUndersized)
 					HandleUndersized(0, null);
 				while (_childCount > 1 && _children[_childCount - 1].Node.IsUndersized)
 					HandleUndersized(_childCount - 1, null);
 			}
-			
+
 			AssertValid();
 		}
 
@@ -157,7 +155,7 @@
 		{
 			var children = _children; // might be faster
 			Debug.Assert(children.Length < 256);
-			
+
 			int i = 2;
 			if (children.Length > 4)
 			{
@@ -193,7 +191,7 @@
 		protected void TryToShiftAnItemToSiblingOfLeaf(int i, IAListTreeObserver<K, T> tob)
 		{
 			AListNode<K, T> childL, childR;
-			
+
 			// Check the left sibling
 			if (i > 0 && (childL = _children[i - 1].Node).TakeFromRight(_children[i].Node, tob) != 0)
 				_children[i].Index++;
@@ -203,8 +201,8 @@
 				_children[i + 1].Index--;
 		}
 
-		/// <summary>Inserts a slot after _children[i], increasing _childCount and 
-		/// replacing [i] and [i+1] with splitLeft and splitRight. Notifies 'tob' 
+		/// <summary>Inserts a slot after _children[i], increasing _childCount and
+		/// replacing [i] and [i+1] with splitLeft and splitRight. Notifies 'tob'
 		/// of the replacement, and checks whether this node itself needs to split.</summary>
 		/// <returns>Value of splitLeft to be returned to parent (non-null if splitting)</returns>
 		protected AListInnerBase<K, T> HandleChildSplit(int i, AListNode<K, T> splitLeft, ref AListNode<K, T> splitRight, IAListTreeObserver<K, T> tob)
@@ -265,8 +263,8 @@
 			}
 		}
 
-		/// <summary>Inserts a child node into _children at index i (resizing 
-		/// _children if necessary), increments _childCount, and adds 
+		/// <summary>Inserts a child node into _children at index i (resizing
+		/// _children if necessary), increments _childCount, and adds
 		/// indexAdjustment to _children[j].Index for all j>i (indexAdjustment can
 		/// be 0 if i==_childCount).</summary>
 		/// <remarks>Derived classes can override to add their own bookkeeping.</remarks>
@@ -359,7 +357,7 @@
 			AssertValid();
 			Debug.Assert(index + count <= TotalCount && (int)(count|index) >= 0);
 			bool undersizedOrAggChg = false;
-			
+
 			while (count != 0)
 			{
 				int i = BinarySearchI(index + count - 1);
@@ -378,7 +376,7 @@
 				if (e.Node == null) {
 					// The child will be empty after the remove operation, so we
 					// can simply delete it without looking at it. This is not
-					// required for correctness, but we do this optimization so 
+					// required for correctness, but we do this optimization so
 					// that RemoveSection() runs in O(log N) time.
 					Debug.Assert(tob == null);
 					undersizedOrAggChg |= LLDelete(i, true);
@@ -421,9 +419,9 @@
 
 		/// <summary>
 		/// This is called by RemoveAt(), DoSingleOperation() for B+ trees, or by
-		/// the constructor called by CopySection(), when child [i] drops below its 
-		/// normal size range. We'll either distribute the child's items to its 
-		/// siblings, or transfer ONE item from a sibling to increase the node's 
+		/// the constructor called by CopySection(), when child [i] drops below its
+		/// normal size range. We'll either distribute the child's items to its
+		/// siblings, or transfer ONE item from a sibling to increase the node's
 		/// size.
 		/// </summary>
 		/// <param name="i">Index of undersized child</param>
@@ -458,7 +456,7 @@
 				return IsUndersized;
 			}
 			else if (leftCap + rightCap >= node.LocalCount)
-			{	// The siblings have enough capacity that we can data from 'node' 
+			{	// The siblings have enough capacity that we can data from 'node'
 				// into its siblings
 				int oldRightCap = rightCap;
 				uint rightAdjustment = 0, a;
@@ -473,17 +471,17 @@
 					}
 				if (node.TotalCount > 0) {
 					Debug.Assert(node is SparseAListLeaf<T>);
-					// Bug fix: in case of a sparse leaf it is possible to have LocalCount==0 
+					// Bug fix: in case of a sparse leaf it is possible to have LocalCount==0
 					// but TotalCount>0. In that case leftCap and rightCap could both be zero.
-					// Originally this case was handled within SparseAListLeaf.TakeFromLeft/Right, 
-					// but this method must also be aware of this case because it's possible that 
+					// Originally this case was handled within SparseAListLeaf.TakeFromLeft/Right,
+					// but this method must also be aware of this case because it's possible that
 					// LocalCount==0 when this method starts, so the loop is skipped.
 					if (left != null)
 						left.TakeFromRight(node, tob);
 					else
 						rightAdjustment += right.TakeFromLeft(node, tob);
 				}
-					
+
 				if (rightAdjustment != 0) // if rightAdjustment==0, _children[i+1] might not exist
 					_children[i+1].Index -= rightAdjustment;
 
@@ -516,7 +514,7 @@
 			}
 		}
 
-		/// <summary>Deletes the child _children[i], shifting all entries afterward 
+		/// <summary>Deletes the child _children[i], shifting all entries afterward
 		/// to the left, and decrements _childCount. If adjustIndexesAfterI is true,
 		/// the values of _children[j].Index where j>i are decreased appropriately.</summary>
 		/// <returns>True if the aggregate value of this node may have changed (organized lists only)</returns>

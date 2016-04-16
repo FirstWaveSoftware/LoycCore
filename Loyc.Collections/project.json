@@ -1,0 +1,10 @@
+{
+	"version": "1.7.0",
+	"frameworks": {
+		"dnxcore50": { },
+		"net46": { }
+	},
+	"dependencies": {
+		"Loyc.Essentials": ""
+	}
+}

@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Loyc.Collections.Impl
 {
-	/// <summary>A base class for read-only collections that wish to implement 
+	/// <summary>A base class for read-only collections that wish to implement
 	/// <see cref="IList{T}"/> and <see cref="IListSource{T}"/>. Provides
 	/// default implementations for most of the methods.</summary>
 	/// <remarks>
@@ -15,18 +15,17 @@ namespace Loyc.Collections.Impl
 	///     public abstract T TryGet(int index, out bool fail);
 	/// </code>
 	/// </remarks>
-	[Serializable]
 	public abstract class ListSourceBase<T> : ReadOnlyCollectionBase<T>, IListAndListSource<T>, IIsEmpty
 	{
 		#region IListSource<T> Members
 
 		public abstract T TryGet(int index, out bool fail);
 		public abstract override int Count { get; }
-		
+
 		public bool IsEmpty { get { return Count == 0; } }
 
 		public T this[int index]
-		{ 
+		{
 			get {
 				bool fail;
 				T value = TryGet(index, out fail);
@@ -35,7 +34,7 @@ namespace Loyc.Collections.Impl
 				return value;
 			}
 		}
-		
+
 		public int IndexOf(T item)
 		{
 			return LCInterfaces.IndexOf(this, item);
@@ -48,11 +47,11 @@ namespace Loyc.Collections.Impl
 
 		IRange<T> IListSource<T>.Slice(int start, int count)
 		{
-			return Slice(start, count); 
+			return Slice(start, count);
 		}
 		public Slice_<T> Slice(int start, int count)
 		{
-			return new Slice_<T>(this, start, count); 
+			return new Slice_<T>(this, start, count);
 		}
 
 		public override IEnumerator<T> GetEnumerator()

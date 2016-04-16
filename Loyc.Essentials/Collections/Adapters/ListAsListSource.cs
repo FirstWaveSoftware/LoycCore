@@ -3,7 +3,7 @@
  * User: Pook
  * Date: 4/10/2011
  * Time: 9:03 AM
- * 
+ *
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
 using System;
@@ -14,8 +14,8 @@ namespace Loyc.Collections
 	public static partial class LCExt
 	{
 		/// <summary>Adapter: treats any IList{T} object as IListSource{T}.</summary>
-		/// <remarks>This method is named "AsListSource" and not "ToListSource" 
-		/// because, in contrast to methods like ToArray() and ToList(), it does not 
+		/// <remarks>This method is named "AsListSource" and not "ToListSource"
+		/// because, in contrast to methods like ToArray() and ToList(), it does not
 		/// make a copy of the sequence.</remarks>
 		public static IListSource<T> AsListSource<T>(this IList<T> c)
 		{
@@ -35,7 +35,6 @@ namespace Loyc.Collections
 	/// Helper type returned from <see cref="LCExt.AsListSource{T}"/>.
 	/// </summary>
 	/// <summary>A read-only wrapper that implements ICollection and ISource.</summary>
-	[Serializable]
 	public sealed class ListAsListSource<T> : WrapperBase<IList<T>>, IListAndListSource<T>
 	{
 		public ListAsListSource(IList<T> obj) : base(obj) { }

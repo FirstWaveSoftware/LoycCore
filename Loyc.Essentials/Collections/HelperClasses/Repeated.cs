@@ -3,7 +3,7 @@
  * User: Pook
  * Date: 4/10/2011
  * Time: 8:47 AM
- * 
+ *
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
 using System;
@@ -15,14 +15,14 @@ namespace Loyc.Collections
 {
 	public static partial class ListExt
 	{
-		/// <summary>Returns a helper object that stores one value, but acts like 
+		/// <summary>Returns a helper object that stores one value, but acts like
 		/// a read-only list that repeats the value the specified number of times.</summary>
 		/// <returns><c>new Repeated&lt;T>(value, count)</c></returns>
 		public static Repeated<T> Repeat<T>(T value, int count)
 		{
 			return new Repeated<T>(value, count);
 		}
-		/// <summary>Returns a helper object that stores one value, but acts like 
+		/// <summary>Returns a helper object that stores one value, but acts like
 		/// a read-only list of one item.</summary>
 		/// <returns><c>new Repeated&lt;T>(value, 1)</c></returns>
 		public static Repeated<T> Single<T>(T value)
@@ -32,9 +32,8 @@ namespace Loyc.Collections
 	}
 
 	/// <summary>Helper struct. A sequence that stores one value, but acts like a list in which
-	/// that value is repeated a specified number of times. Returned from 
+	/// that value is repeated a specified number of times. Returned from
 	/// <see cref="Range.Repeat{T}"/>.</summary>
-	[Serializable]
 	public struct Repeated<T> : IListAndListSource<T>, IRange<T>, IIsEmpty
 	{
 		int _count;
@@ -64,7 +63,7 @@ namespace Loyc.Collections
 		}
 
 		public T this[int index]
-		{ 
+		{
 			get {
 				bool fail;
 				T value = TryGet(index, out fail);
@@ -73,7 +72,7 @@ namespace Loyc.Collections
 				return value;
 			}
 		}
-		
+
 		public int IndexOf(T item)
 		{
 			return LCInterfaces.IndexOf(this, item);
@@ -81,11 +80,11 @@ namespace Loyc.Collections
 
 		IRange<T> IListSource<T>.Slice(int start, int count)
 		{
-			return Slice(start, count); 
+			return Slice(start, count);
 		}
 		public Slice_<T> Slice(int start, int count)
 		{
-			return new Slice_<T>(this, start, count); 
+			return new Slice_<T>(this, start, count);
 		}
 
 		#endregion
@@ -105,7 +104,7 @@ namespace Loyc.Collections
 		{
 			throw new ReadOnlyException();
 		}
-		
+
 		#endregion
 
 		#region ICollection<T> Members
@@ -162,10 +161,10 @@ namespace Loyc.Collections
 
 		public T Front
 		{
-			get { 
+			get {
 				if (_count <= 0)
-					throw new EmptySequenceException(); 
-				return _value; 
+					throw new EmptySequenceException();
+				return _value;
 			}
 		}
 		public T PopFront(out bool fail)

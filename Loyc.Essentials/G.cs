@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Collections;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using Loyc.MiniTest;
 using Loyc.Math;
 using Loyc.Threading;
@@ -43,19 +44,19 @@ namespace Loyc
 		public static readonly object BoxedTrue = true;        //!< Singleton true cast to object.
 		public static readonly object BoxedVoid = new @void(); //!< Singleton void cast to object.
 
-		private class ComparisonFrom<T> where T : IComparable<T> 
+		private class ComparisonFrom<T> where T : IComparable<T>
 		{
 			public static readonly Comparison<T> C = GetC();
 			public static readonly Func<T, T, int> F = GetF();
 			static Comparison<T> GetC() {
-				if (typeof(T).IsValueType)
+				if (typeof(T).GetTypeInfo().IsValueType)
 					return (a, b) => a.CompareTo(b);
-				return (Comparison<T>)Delegate.CreateDelegate(typeof(Comparison<T>), null, typeof(IComparable<T>).GetMethod("CompareTo"));
+				return (Comparison<T>)typeof(IComparable<T>).GetMethod( nameof(IComparable<T>.CompareTo) ).CreateDelegate( typeof(Comparison<T>) );
 			}
 			static Func<T, T, int> GetF() {
-				if (typeof(T).IsValueType)
+				if (typeof(T).GetTypeInfo().IsValueType)
 					return (a, b) => a.CompareTo(b);
-				return (Func<T, T, int>)Delegate.CreateDelegate(typeof(Func<T, T, int>), null, typeof(IComparable<T>).GetMethod("CompareTo"));
+				return (Func<T, T, Int32>)typeof(IComparable<T>).GetMethod( nameof(IComparable<T>.CompareTo) ).CreateDelegate( typeof(Func<T, T, Int32>) );
 			}
 		}
 		/// <summary>Gets a <see cref="Comparison{T}"/> for the specified type.</summary>
@@ -78,7 +79,7 @@ namespace Loyc
 		{
 			return pred.Compare;
 		}
-		
+
 		public static List<string> SplitCommandLineArguments(string listString)
 		{
 			List<string> list = new List<string>();
@@ -99,7 +100,7 @@ namespace Loyc
 
 		static char[] _invalids;
 
-		/// <summary>Replaces characters in <c>text</c> that are not allowed in 
+		/// <summary>Replaces characters in <c>text</c> that are not allowed in
 		/// file names with the specified replacement character.</summary>
 		/// <param name="text">Text to make into a valid filename. The same string is returned if it is valid already.</param>
 		/// <param name="replacement">Replacement character, or null to simply remove bad characters.</param>
@@ -132,7 +133,7 @@ namespace Loyc
 		public static Pair<T1, T2> Pair<T1, T2>(T1 a, T2 b) { return new Pair<T1, T2>(a, b); }
 		public static Triplet<T1, T2, T3> Triplet<T1, T2, T3>(T1 a, T2 b, T3 c) { return new Triplet<T1, T2, T3>(a, b, c); }
 
-		/// <summary>Same as Debug.Assert except that the argument is evaluated 
+		/// <summary>Same as Debug.Assert except that the argument is evaluated
 		/// even in a Release build.</summary>
 		public static bool Verify(bool condition)
 		{
@@ -252,7 +253,7 @@ namespace Loyc
 						}
 						if (c == '\f') { // 12 (form feed)
 							@out.Append(@"\f");
-							return true; 
+							return true;
 						}
 						if (c == '\v') { // 11 (vertical tab)
 							@out.Append(@"\v");
@@ -287,7 +288,7 @@ namespace Loyc
 		}
 
 		/// <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
-		/// <param name="removeUnnecessaryBackslashes">Causes the backslash before 
+		/// <param name="removeUnnecessaryBackslashes">Causes the backslash before
 		/// an unrecognized escape sequence to be removed, e.g. "\z" => "z".</param>
 		public static string UnescapeCStyle(string s, int index, int length, bool removeUnnecessaryBackslashes)
 		{
@@ -310,9 +311,9 @@ namespace Loyc
 			return c;
 		}
 
-		/// <summary>Unescapes a single character of a string, e.g. 
-		/// <c>int = 3; UnescapeChar("foo\\n", ref i) == '\n'</c>. Returns the 
-		/// character at 'index' if it is not a backslash, or if it is a 
+		/// <summary>Unescapes a single character of a string, e.g.
+		/// <c>int = 3; UnescapeChar("foo\\n", ref i) == '\n'</c>. Returns the
+		/// character at 'index' if it is not a backslash, or if it is a
 		/// backslash but no escape sequence could be discerned.</summary>
 		/// <exception cref="IndexOutOfRangeException">The index was invalid.</exception>
 		public static char UnescapeChar(string s, ref int i)
@@ -366,7 +367,7 @@ namespace Loyc
 			return c;
 		}
 
-		/// <summary>Helper function for a using statement that temporarily 
+		/// <summary>Helper function for a using statement that temporarily
 		/// modifies a thread-local variable.</summary>
 		/// <param name="variable">Variable to change</param>
 		/// <param name="newValue">New value</param>
@@ -385,23 +386,23 @@ namespace Loyc
 
 
 		/// <summary>Tries to parse a string to an integer. Unlike <see cref="Int32.TryParse(string, out int)"/>,
-		/// this method allows parsing to start at any point in the string, it 
+		/// this method allows parsing to start at any point in the string, it
 		/// allows non-numeric data after the number, and it can parse numbers that
 		/// are not in base 10.</summary>
 		/// <param name="radix">Number base, e.g. 10 for decimal and 2 for binary.</param>
 		/// <param name="index">Location at which to start parsing</param>
 		/// <param name="flags"><see cref="ParseFlag"/>s that affect parsing behavior.</param>
-		/// <param name="skipSpaces">Whether to skip spaces before parsing. Only 
-		/// the ' ' and '\t' characters are treated as spaces. No space is allowed 
+		/// <param name="skipSpaces">Whether to skip spaces before parsing. Only
+		/// the ' ' and '\t' characters are treated as spaces. No space is allowed
 		/// between '-' and the digits of a negative number, even with this flag.</param>
 		/// <returns>True if a number was found starting at the specified index
 		/// and it was successfully converted to a number, or false if not.</returns>
 		/// <remarks>
-		/// This method never throws. If parsing fails, index is left unchanged, 
-		/// except that spaces are still skipped if you set the skipSpaces flag. 
-		/// If base>36, parsing can succeed but digits above 35 (Z) cannot occur 
-		/// in the output number. If the input number cannot fit in 'result', the 
-		/// return value is false but index increases anyway, and 'result' is a 
+		/// This method never throws. If parsing fails, index is left unchanged,
+		/// except that spaces are still skipped if you set the skipSpaces flag.
+		/// If base>36, parsing can succeed but digits above 35 (Z) cannot occur
+		/// in the output number. If the input number cannot fit in 'result', the
+		/// return value is false but index increases anyway, and 'result' is a
 		/// bitwise truncated version of the number.
 		/// <para/>
 		/// When parsing input such as "12.34", the parser stops and returns true
@@ -447,7 +448,7 @@ namespace Loyc
 			return ok && ((result < 0) == negative || result == 0);
 		}
 
-		/// <summary>Flags that can be used with the overload of TryParseAt() 
+		/// <summary>Flags that can be used with the overload of TryParseAt()
 		/// that parses unsigned integers.</summary>
 		public enum ParseFlag
 		{
@@ -456,13 +457,13 @@ namespace Loyc
 			/// <summary>Skip spaces inside the number. Without this flag, spaces make parsing stop.</summary>
 			SkipSpacesInsideNumber = 2,
 			/// <summary>Changes overflow handling behavior when parsing an integer,
-			/// so that the result does not overflow (wrap), and the digit(s) at the 
-			/// end of the string, that would have caused overflow, are ignored. In 
+			/// so that the result does not overflow (wrap), and the digit(s) at the
+			/// end of the string, that would have caused overflow, are ignored. In
 			/// this case, the return value is still false.</summary>
 			StopBeforeOverflow = 4,
 			/// <summary>Skip underscores inside number. Without this flag, underscores make parsing stop.</summary>
 			SkipUnderscores = 8,
-			/// <summary>Whether to treat comma as a decimal point when parsing a float. 
+			/// <summary>Whether to treat comma as a decimal point when parsing a float.
 			/// The dot '.' is always treated as a decimal point.</summary>
 			AllowCommaDecimalPoint = 8,
 		}
@@ -478,10 +479,10 @@ namespace Loyc
 			numDigits = 0;
 			if ((flags & ParseFlag.SkipSpacesInFront) != 0)
 				s = SkipSpaces(s);
-			
+
 			bool overflow = false;
 			int oldStart = s.InternalStart;
-			
+
 			for (;; s = s.Slice(1))
 			{
 				char c = s[0, '\0'];
@@ -511,7 +512,7 @@ namespace Loyc
 		}
 
 		/// <summary>Low-level method that identifies the parts of a float literal
-		/// of arbitrary base (typically base 2, 10, or 16) with no prefix or 
+		/// of arbitrary base (typically base 2, 10, or 16) with no prefix or
 		/// suffix, such as <c>2.Cp0</c> (which means 2.75 in base 16).</summary>
 		/// <param name="radix">Base of the number to parse; must be between 2
 		/// and 36.</param>
@@ -524,12 +525,12 @@ namespace Loyc
 		/// is based on the front part of the number only (not including the 'p' or
 		/// 'e' suffix). Negative values represent digits after the decimal point,
 		/// while positive numbers represent 64-bit overflow. For example, if the
-		/// input is <c>12.3456</c> with <c>radix=10</c>, the output will be 
-		/// <c>mantissa=123456</c> and <c>exponentBaseR=-4</c>. If the input is 
-		/// <c>0123_4567_89AB_CDEF_1234.5678</c> with <c>radix=16</c>, the mantissa 
-		/// overflows, and the result is <c>mantissa = 0x1234_5678_9ABC_DEF1</c> 
+		/// input is <c>12.3456</c> with <c>radix=10</c>, the output will be
+		/// <c>mantissa=123456</c> and <c>exponentBaseR=-4</c>. If the input is
+		/// <c>0123_4567_89AB_CDEF_1234.5678</c> with <c>radix=16</c>, the mantissa
+		/// overflows, and the result is <c>mantissa = 0x1234_5678_9ABC_DEF1</c>
 		/// with <c>exponentBaseR=3</c>.</param>
-		/// <param name="numDigits">Set to the number of digits in the number, not 
+		/// <param name="numDigits">Set to the number of digits in the number, not
 		/// including the exponent part.</param>
 		/// <param name="flags">Alters parsing behavior, see <see cref="ParseFlags"/>.</param>
 		/// <remarks>
@@ -540,15 +541,15 @@ namespace Loyc
 		///   ( ('p'|'P') ('-'|'+')? DecimalDigits+ )?
 		///   ( ('e'|'E') ('-'|'+')? DecimalDigits+ )?
 		/// </code>
-		/// where Digits refers to one digits in the requested base, possibly 
-		/// including underscores or spaces if the flags allow it; similarly, 
+		/// where Digits refers to one digits in the requested base, possibly
+		/// including underscores or spaces if the flags allow it; similarly,
 		/// DecimalDigits refers to base-10 digits and is also affected by the
 		/// flags.
 		/// <para/>
 		/// Returns false if there was an error interpreting the input.
 		/// <para/>
-		/// To keep the parser relatively simple, it does not roll back in case of 
-		/// error the way the int parser does. For example, given the input "23p", 
+		/// To keep the parser relatively simple, it does not roll back in case of
+		/// error the way the int parser does. For example, given the input "23p",
 		/// the 'p' is consumed and causes the method to return false, even though
 		/// the parse could have been successful if it had ignored the 'p'.
 		/// </remarks>
@@ -571,11 +572,11 @@ namespace Loyc
 			exponentBase2 = 0;
 			exponentBase10 = 0;
 			exponentBaseR = 0;
-			
+
 			bool success = TryParseUInt(ref source, ref mantissa, radix, flags, out numDigits);
 			if (!success) // possible overflow, extra digits remain if so
 				numDigits += (exponentBaseR = SkipExtraDigits(ref source, radix, flags));
-			
+
 			c = source[0, '\0'];
 			if (c == '.' || (c == ',' && (flags & ParseFlag.AllowCommaDecimalPoint) != 0))
 			{
@@ -626,9 +627,9 @@ namespace Loyc
 			}
 		}
 
-		/// <summary>Parses the parts of a floating-point string. See the other 
+		/// <summary>Parses the parts of a floating-point string. See the other
 		/// overload for details.</summary>
-		/// <param name="radix">Base of the number to parse; must be 2 (binary), 
+		/// <param name="radix">Base of the number to parse; must be 2 (binary),
 		/// 4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
 		/// <param name="negative">true if the string began with '-'.</param>
 		/// <param name="mantissa">Integer magnitude of the number.</param>
@@ -637,9 +638,9 @@ namespace Loyc
 		/// <param name="numDigits">Set to the number of digits in the number, not including the exponent part.</param>
 		/// <param name="flags">Alters parsing behavior, see <see cref="ParseFlags"/>.</param>
 		/// <remarks>
-		/// This method is a wrapper around the other overload that combines 
+		/// This method is a wrapper around the other overload that combines
 		/// the 'exponentBaseR' parameter with 'exponentBase2' or 'exponentBase10'
-		/// depending on the radix. For example, when radix=10, this method 
+		/// depending on the radix. For example, when radix=10, this method
 		/// adds <c>exponentBaseR</c> to <c>exponentBase10</c>.
 		/// </remarks>
 		public static bool TryParseFloatParts(ref UString source, int radix, out bool negative, out ulong mantissa, out int exponentBase2, out int exponentBase10, out int numDigits, ParseFlag flags = 0)
@@ -668,9 +669,9 @@ namespace Loyc
 			return success;
 		}
 
-		/// <summary>Parses a string to a double-precision float, returning NaN on 
+		/// <summary>Parses a string to a double-precision float, returning NaN on
 		/// failure or an infinity value on overflow.</summary>
-		/// <param name="radix">Base of the number to parse; must be 2 (binary), 
+		/// <param name="radix">Base of the number to parse; must be 2 (binary),
 		/// 4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
 		/// <param name="flags">Alters parsing behavior, see <see cref="ParseFlags"/>.</param>
 		public static double TryParseDouble(ref UString source, int radix, ParseFlag flags = 0)
@@ -690,9 +691,9 @@ namespace Loyc
 			}
 		}
 
-		/// <summary>Parses a string to a single-precision float, returning NaN on 
+		/// <summary>Parses a string to a single-precision float, returning NaN on
 		/// failure or an infinity value on overflow.</summary>
-		/// <param name="radix">Base of the number to parse; must be 2 (binary), 
+		/// <param name="radix">Base of the number to parse; must be 2 (binary),
 		/// 4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
 		/// <param name="flags">Alters parsing behavior, see <see cref="ParseFlags"/>.</param>
 		public static float TryParseFloat(ref UString source, int radix, ParseFlag flags = 0)
@@ -751,12 +752,12 @@ namespace Loyc
 			if (HtmlEntityTable == null)
 				HtmlEntityTable = new Dictionary<char,string>() {
 					{' ', "sp"},     {'!', "excl"},   {'\"', "quot"},  {'#', "num"},
-					{'$', "dollar"}, {'%', "percnt"}, {'&', "amp"},    {'\'', "apos"},  
-					{'(', "lpar"},   {')', "rpar"},   {'*', "ast"},    {'+', "plus"}, 
+					{'$', "dollar"}, {'%', "percnt"}, {'&', "amp"},    {'\'', "apos"},
+					{'(', "lpar"},   {')', "rpar"},   {'*', "ast"},    {'+', "plus"},
 					{',', "comma"},  {'-', "dash"},   {'.', "period"}, {'/', "sol"},
-					{':', "colon"},  {';', "semi"},   {'<', "lt"},     {'=', "equals"}, 
-					{'>', "gt"},     {'?', "quest"},  {'@', "commat"}, 
-					{'[', "lsqb"},   {'\\', "bsol"},  {']', "rsqb"},   {'^', "caret"}, 
+					{':', "colon"},  {';', "semi"},   {'<', "lt"},     {'=', "equals"},
+					{'>', "gt"},     {'?', "quest"},  {'@', "commat"},
+					{'[', "lsqb"},   {'\\', "bsol"},  {']', "rsqb"},   {'^', "caret"},
 					{'_', "lowbar"}, {'`', "grave"},  {'{', "lcub"},   {'}', "rcub"},
 					{'|', "vert"},   {'~', "tilde"}, // {(char)0xA0, "nbsp"}
 				};
@@ -804,7 +805,7 @@ namespace Loyc
 			expected.Add("duck");
 			expected.Add("\"error \"foo\"!");
 			expected.Add("grape");
-			
+
 			List<string> output = G.SplitCommandLineArguments(input);
 			Assert.AreEqual(output.Count, expected.Count);
 			for (int i = 0; i < expected.Count; i++)
@@ -883,7 +884,7 @@ namespace Loyc
 		{
 			long result;
 			UString input2 = input.USlice(i);
-			bool success = G.TryParseInt(ref input2, out result, radix, 
+			bool success = G.TryParseInt(ref input2, out result, radix,
 				skipSpaces ? G.ParseFlag.SkipSpacesInFront : 0);
 			AreEqual(expected, result);
 			AreEqual(expectSuccess, success);
@@ -940,7 +941,7 @@ namespace Loyc
 			TestParse(false, 10, "123.456p+", float.NaN);
 			TestParse(true, 10, "123.456p-1e+3", 123456f * 0.5f);
 			TestParse(false, 10, "123.456e+3p-1", 123456f); // this order is NOT supported
-		
+
 			TestParse(true, 16, "1.4", 1.25f);
 			TestParse(true, 16, "123.456p12", (float)0x123456);
 			TestParse(true, 16, "123.456p-12", (float)0x123456 / (float)0x1000000);

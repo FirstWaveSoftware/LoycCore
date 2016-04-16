@@ -1,14 +1,14 @@
 /*
 	VList processing library: Copyright 2009 by David Piepgrass
 
-	This library is free software: you can redistribute it and/or modify it 
-	it under the terms of the GNU Lesser General Public License as published 
-	by the Free Software Foundation, either version 3 of the License, or (at 
+	This library is free software: you can redistribute it and/or modify it
+	it under the terms of the GNU Lesser General Public License as published
+	by the Free Software Foundation, either version 3 of the License, or (at
 	your option) any later version. It is provided without ANY warranties.
-	Please note that it is fairly complex. Therefore, it may contain bugs 
+	Please note that it is fairly complex. Therefore, it may contain bugs
 	despite my best efforts to test it.
 
-	If you did not receive a copy of the License with this library, you can 
+	If you did not receive a copy of the License with this library, you can
 	find it at http://www.gnu.org/licenses/
 */
 using System;
@@ -29,20 +29,20 @@ namespace Loyc.Collections
 	/// is available online about the VList data types.
 	/// <para/>
 	/// See the remarks of <see cref="VListBlock{T}"/> for more information
-    /// about VLists. Items are normally added to, and removed from, the front of a 
-	/// FVList or to the back of a VList; adding, removing or changing items at any 
-	/// other position is inefficient. You can call ToVList() to convert a FVList to 
-	/// its equivalent VList, which is a reverse-order view of the same list that 
+    /// about VLists. Items are normally added to, and removed from, the front of a
+	/// FVList or to the back of a VList; adding, removing or changing items at any
+	/// other position is inefficient. You can call ToVList() to convert a FVList to
+	/// its equivalent VList, which is a reverse-order view of the same list that
 	/// shares the same memory.
 	/// </remarks>
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>)),
 	 DebuggerDisplay("Count = {Count}")]
-	public struct FVList<T> : IListAndListSource<T>, ICloneable<FVList<T>>, ICloneable
+	public struct FVList<T> : IListAndListSource<T>, ICloneable<FVList<T>>
 	{
 		// BTW: Normally the invariant (_localCount == 0) == (_block == null) holds.
-		// However, sometimes FVList is used internally to reference a mutable FWList 
+		// However, sometimes FVList is used internally to reference a mutable FWList
 		// or WList. In that case it is possible that _block != null but the block
-		// is empty. VList, in contrast, is not normally used to refer to a mutable 
+		// is empty. VList, in contrast, is not normally used to refer to a mutable
 		// list so it can always assume (_localCount == 0) == (_block == null).
 
 		internal VListBlock<T> _block;
@@ -82,16 +82,16 @@ namespace Loyc.Collections
 			_localCount = 0;
 			AddRange(list);
 		}
-		
+
 		#endregion
 
 		#region Obtaining sublists
-		
+
 		public FVList<T> WithoutFirst(int offset)
 		{
 			return VListBlock<T>.SubList(_block, _localCount, offset);
 		}
-		/// <summary>Returns a list without the first item. If the list is empty, 
+		/// <summary>Returns a list without the first item. If the list is empty,
 		/// an empty list is retured.</summary>
 		public FVList<T> Tail
 		{
@@ -112,7 +112,7 @@ namespace Loyc.Collections
 				return Empty;
 			return WithoutFirst(c - count);
 		}
-		
+
 		#endregion
 
 		#region Equality testing and GethashCode()
@@ -147,7 +147,7 @@ namespace Loyc.Collections
 				return 2468; // any ol' number will do
 			return _block.GetHashCode() ^ _localCount;
 		}
-		
+
 		#endregion
 
 		#region AddRange, InsertRange, RemoveRange
@@ -251,9 +251,9 @@ namespace Loyc.Collections
 
 		/// <summary>Gets the number of blocks used by this list.</summary>
 		/// <remarks>You might look at this property when optimizing your program,
-		/// because the runtime of some operations increases as the chain length 
+		/// because the runtime of some operations increases as the chain length
 		/// increases. This property runs in O(BlockChainLength) time. Ideally,
-		/// BlockChainLength is proportional to log_2(Count), but certain FVList 
+		/// BlockChainLength is proportional to log_2(Count), but certain FVList
 		/// usage patterns can produce long chains.</remarks>
 		public int BlockChainLength
 		{
@@ -262,17 +262,17 @@ namespace Loyc.Collections
 
 		public static readonly FVList<T> Empty = new FVList<T>();
 
-		/// <summary>Adds the specified item to the list, or 
-		/// original.WithoutFirst(original.Count - Count - 1) 
+		/// <summary>Adds the specified item to the list, or
+		/// original.WithoutFirst(original.Count - Count - 1)
 		/// if doing so is equivalent.</summary>
 		/// <param name="item">Item to add</param>
 		/// <param name="original">An old version of the list</param>
 		/// <returns>Returns this.</returns>
 		/// <remarks>
-		/// This method helps write functional code in which you process an input 
-		/// list and produce an output list that may or may not be the same as the 
+		/// This method helps write functional code in which you process an input
+		/// list and produce an output list that may or may not be the same as the
 		/// input list. In case the output list is identical, you would prefer
-		/// to return the original input list rather than wasting memory on a new 
+		/// to return the original input list rather than wasting memory on a new
 		/// list. SmartAdd() helps you do this. The following method demonstrates
 		/// SmartAdd() by removing all negative numbers from a list:
 		/// <example>
@@ -366,7 +366,7 @@ namespace Loyc.Collections
 				this = _block.ReplaceAt(_localCount, value, index);
 			}
 		}
-		/// <summary>Gets an item from the list at the specified index; returns 
+		/// <summary>Gets an item from the list at the specified index; returns
 		/// defaultValue if the index is not valid.</summary>
 		public T this[int index, T defaultValue]
 		{
@@ -416,7 +416,7 @@ namespace Loyc.Collections
 				          || (_localCount == 0 && _block.ImmCount == 0));
 				if (_block == null)
 					return 0;
-				return _localCount + _block.PriorCount; 
+				return _localCount + _block.PriorCount;
 			}
 		}
 
@@ -441,7 +441,7 @@ namespace Loyc.Collections
 		/// <summary>Enumerator for FVList; also used by FWList.</summary>
 		public struct Enumerator : IEnumerator<T>
 		{
-			// _tail: rest of the list. May include mutable items if a FWList is 
+			// _tail: rest of the list. May include mutable items if a FWList is
 			// enumerated; a FVList with mutable items is never publicly exposed.
 			FVList<T> _tail;
 			T _current;
@@ -504,13 +504,12 @@ namespace Loyc.Collections
 
 		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
 		public Slice_<T> Slice(int start, int count = int.MaxValue) { return new Slice_<T>(this, start, count); }
-		
-		#endregion 
+
+		#endregion
 
 		#region ICloneable Members
 
 		public FVList<T> Clone() { return this; }
-		object ICloneable.Clone() { return this; }
 
 		#endregion
 
@@ -525,7 +524,7 @@ namespace Loyc.Collections
 		/// structure is not modified.</returns>
 		/// <remarks>
 		/// If the predicate keeps the first N items it is passed (which are the
-		/// last items in a FVList), those N items are typically not copied, but 
+		/// last items in a FVList), those N items are typically not copied, but
 		/// shared between the existing list and the new one.
 		/// </remarks>
 		public FVList<T> Where(Predicate<T> filter)
@@ -542,9 +541,9 @@ namespace Loyc.Collections
 		/// <returns>The list after filtering has been applied. The original list
 		/// structure is not modified.</returns>
 		/// <remarks>
-		/// This is a smart function. If the filter does not modify the first N 
-		/// items it is passed (which are the last items in a FVList), those N items 
-		/// are typically not copied, but shared between the existing list and the 
+		/// This is a smart function. If the filter does not modify the first N
+		/// items it is passed (which are the last items in a FVList), those N items
+		/// are typically not copied, but shared between the existing list and the
 		/// new one.
 		/// </remarks>
 		public FVList<T> WhereSelect(Func<T,Maybe<T>> filter)
@@ -554,10 +553,10 @@ namespace Loyc.Collections
 			else
 				return _block.WhereSelect(_localCount, filter, null);
 		}
-		
+
 		/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
-		/// <returns>The list after the map function is applied to each item. The 
+		/// <returns>The list after the map function is applied to each item. The
 		/// original FVList structure is not modified.</returns>
 		/// <remarks>
 		/// This method is called "Smart" because of what happens if the map
@@ -573,10 +572,10 @@ namespace Loyc.Collections
 			else
 				return _block.SmartSelect(_localCount, map, null);
 		}
-		
+
 		/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
-		/// <returns>The list after the map function is applied to each item. The 
+		/// <returns>The list after the map function is applied to each item. The
 		/// original FVList structure is not modified.</returns>
 		public FVList<Out> Select<Out>(Func<T, Out> map)
 		{
@@ -592,12 +591,12 @@ namespace Loyc.Collections
 		/// but allows you to do several common operations in one transformer
 		/// method.
 		/// <para/>
-		/// The VListTransformer method takes two arguments: an item and its index 
+		/// The VListTransformer method takes two arguments: an item and its index
 		/// in the FVList or VList. It can modify the item if desired, and then it
 		/// returns a XfAction value, which indicates the action to take. Most
-		/// often you will return XfAction.Drop, XfAction.Keep, XfAction.Change, 
-		/// which, repectively, drop the item from the output list, copy the item 
-		/// to the output list unchanged (even if you modified the item), and 
+		/// often you will return XfAction.Drop, XfAction.Keep, XfAction.Change,
+		/// which, repectively, drop the item from the output list, copy the item
+		/// to the output list unchanged (even if you modified the item), and
 		/// copy the item to the output list (assuming you changed it).
 		/// <para/>
 		/// Transform() needs to know if the item changed, at least at first,
@@ -607,18 +606,18 @@ namespace Loyc.Collections
 		/// is exactly the same (operator== returns true).
 		/// <para/>
 		/// Of course, it would have been simpler just to return a boolean
-		/// indicating whether to keep the item, and the Transform method itself 
+		/// indicating whether to keep the item, and the Transform method itself
 		/// could check whether the item changed. But checking for equality is
-		/// a tad slow in the .NET framework, because there is no bitwise 
-		/// equality operator in .NET, so a virtual function would have to be 
-		/// called instead to test equality, which is especially slow if T is a 
+		/// a tad slow in the .NET framework, because there is no bitwise
+		/// equality operator in .NET, so a virtual function would have to be
+		/// called instead to test equality, which is especially slow if T is a
 		/// value type that does not implement IEquatable(of T).
 		/// <para/>
-		/// The final possible action, XfAction.Repeat, is like XfAction.Change 
-		/// except that Transform() calls the VListTransformer again. The second 
-		/// call has the form x(~i, ref item), where ~i is the bitwise NOT of the 
-		/// index i, and item is the same item that x returned the first time it 
-		/// was called. On the second call, x() can return XfAction.Change again 
+		/// The final possible action, XfAction.Repeat, is like XfAction.Change
+		/// except that Transform() calls the VListTransformer again. The second
+		/// call has the form x(~i, ref item), where ~i is the bitwise NOT of the
+		/// index i, and item is the same item that x returned the first time it
+		/// was called. On the second call, x() can return XfAction.Change again
 		/// to get a third call, if it wants.
 		/// <para/>
 		/// XfAction.Repeat is best explained by example. In the following
@@ -628,15 +627,15 @@ namespace Loyc.Collections
 		///     // This example produces (1, 1, 2, 2, 3, 3)
 		///     return i >= 0 ? XfAction.Repeat : XfAction.Keep;
 		/// });
-		/// 
+		///
 		/// output = list.Transform((i, ref n) => {
 		///     // This example produces (1, 10, 2, 20, 3, 30)
-		///     if (i >= 0) 
+		///     if (i >= 0)
 		///         return XfAction.Repeat;
 		///     n *= 10;
 		///     return XfAction.Change;
 		/// });
-		/// 
+		///
 		/// output = list.Transform((i, ref n) => {
 		///     // This example produces (10, 1, 20, 2, 30, 3)
 		///     if (i >= 0) {
@@ -645,7 +644,7 @@ namespace Loyc.Collections
 		///     }
 		///     return XfAction.Keep;
 		/// });
-		/// 
+		///
 		/// output = list.Transform((i, ref n) => {
 		///     // This example produces (10, 100, 1000, 20, 200, 30, 300)
 		///     n *= 10;
@@ -655,19 +654,19 @@ namespace Loyc.Collections
 		/// });
 		/// </example>
 		/// And now for some examples using XfAction.Keep, XfAction.Drop and
-		/// XfAction.Change. Assume list is a VList holding the following 
+		/// XfAction.Change. Assume list is a VList holding the following
 		/// integers: (-1, 2, -2, 13, 5, 8, 9)
 		/// <example>
 		/// output = list.Transform((i, ref n) =>
 		/// {   // Keep every second item: (2, 13, 8)
 		///     return (i % 2) == 1 ? XfAction.Keep : XfAction.Drop;
 		/// });
-		/// 
+		///
 		/// output = list.Transform((i, ref n) =>
 		/// {   // Keep odd numbers: (-1, 13, 5, 9)
 		///     return (n % 2) != 0 ? XfAction.Keep : XfAction.Drop;
 		/// });
-		/// 
+		///
 		/// output = list.Transform((i, ref n) =>
 		/// {   // Keep and square all odd numbers: (1, 169, 25, 81)
 		///     if ((n % 2) != 0) {
@@ -676,7 +675,7 @@ namespace Loyc.Collections
 		///     } else
 		///         return XfAction.Drop;
 		/// });
-		/// 
+		///
 		/// output = list.Transform((i, ref n) =>
 		/// {   // Increase each item by its index: (-1, 3, 0, 16, 9, 13, 15)
 		///     n += i;
@@ -704,7 +703,7 @@ namespace Loyc.Collections
 
 			FVList<int> list = new FVList<int>();
 			Assert.That(list.IsEmpty);
-			
+
 			// Adding to VListBlockOfTwo
 			list = new FVList<int>(10, 20);
 			ExpectList(list, 10, 20);
@@ -756,7 +755,7 @@ namespace Loyc.Collections
 			ExpectListByEnumerator(list2, 10, 9, 8, 7, 6, 5, 4, 2, 1);
 			AssertThrows<IndexOutOfRangeException>(delegate() { int i = list[-1]; });
 			AssertThrows<IndexOutOfRangeException>(delegate() { int i = list[15]; });
-			
+
 			// IndexOf, contains
 			Assert.That(list.Contains(11));
 			Assert.That(!list2.Contains(11));
@@ -800,11 +799,11 @@ namespace Loyc.Collections
 			list2.AddRange(list2, list2.WithoutFirst(3));
 			ExpectList(list2, 10,9,8,10,9,8,7,6,5,4,2,1);
 			Assert.That(list3 != list2);
-			
+
 			// List3 is a sublist of list, but list2 no longer is
 			Assert.That(list3.PreviousIn(list).First == 11);
 			AssertThrows<InvalidOperationException>(delegate() { list2.PreviousIn(list); });
-			
+
 			list2 = list2.WithoutFirst(3);
 			Assert.That(list3 == list2);
 		}
@@ -860,7 +859,7 @@ namespace Loyc.Collections
 			ExpectList(list2, 2, 4, 6, 8, 10, -2, 12);
 			list2.Insert(5, -1);
 			ExpectList(list2, 2, 4, 6, 8, 10, -1, -2, 12);
-			
+
 			// Test changing items
 			list = list2;
 			for (int i = 0; i < list.Count; i++)
@@ -957,7 +956,7 @@ namespace Loyc.Collections
 
 			array = list.Add(2).ToArray();
 			ExpectList(array, 2, 1);
-			
+
 			array = list.Add(3).ToArray();
 			ExpectList(array, 3, 2, 1);
 
@@ -1059,19 +1058,19 @@ namespace Loyc.Collections
 		[Test]
 		public void TestTransform()
 		{
-			// Test transforms on 1-item lists. The helper method TestTransform() 
-			// creates a list of the specified length, counting up from 1 at the 
-			// tail. For instance, TestTransform(3, ...) will start with a FVList of 
+			// Test transforms on 1-item lists. The helper method TestTransform()
+			// creates a list of the specified length, counting up from 1 at the
+			// tail. For instance, TestTransform(3, ...) will start with a FVList of
 			// (3, 2, 1). Its transform function always multiplies the item by 10,
 			// then it returns the next action in the list. FVList<int>.Transform()
 			// transforms the tail first, so for example,
-			// 
-			//    TestTransform(4, ..., XfAction.Keep, XfAction.Change, 
+			//
+			//    TestTransform(4, ..., XfAction.Keep, XfAction.Change,
 			//                          XfAction.Drop, XfAction.Keep);
-			// 
-			// ...should produce a result of (4, 20, 1) as a FVList, which is 
+			//
+			// ...should produce a result of (4, 20, 1) as a FVList, which is
 			// equivalent to the VList (1, 20, 4).
-			
+
 			// Tests on 1-item lists
 			TestTransform(1, new int[] {},   0, XfAction.Drop);
 			TestTransform(1, new int[] {1},  1, XfAction.Keep);
@@ -1121,11 +1120,11 @@ namespace Loyc.Collections
 					item *= 10;
 					return actions[counter++];
 				});
-			
+
 			Assert.AreEqual(counter, actions.Length);
-			
+
 			ExpectList(result.ToVList(), expect);
-			
+
 			Assert.That(result.WithoutFirst(result.Count - commonTailLength)
 			         == list.WithoutFirst(list.Count - commonTailLength));
 		}

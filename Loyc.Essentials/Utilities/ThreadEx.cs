@@ -7,14 +7,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Diagnostics;
-#if !CompactFramework
-using System.Runtime.Serialization;
-#else
-namespace System.Threading
-{
-	public delegate void ParameterizedThreadStart(object obj);
-}
-#endif
 
 namespace Loyc.Threading
 {
@@ -22,17 +14,17 @@ namespace Loyc.Threading
 	/// .NET framework by propagating thread-local variables from parent
 	/// to child threads, and by providing a ThreadStarting event.</summary>
 	/// <remarks>
-	/// This class is a decorator for the Thread class and thus a 
+	/// This class is a decorator for the Thread class and thus a
 	/// drop-in replacement, except that only the most common methods and
 	/// properties (both static and non-static) are provided.
 	/// <para/>
-	/// .NET itself has no support whatsoever from inheriting thread-local 
+	/// .NET itself has no support whatsoever from inheriting thread-local
 	/// variables. Not only are thread locals not inherited from the parent
 	/// thread, .NET fires no event when a thread starts and a child thread
 	/// cannot get the thread ID of the thread that created it.
 	/// <para/>
 	/// ThreadEx helps work around this problem by automatically propagating
-	/// <see cref="ThreadLocalVariable{T}"/> values, and providing the 
+	/// <see cref="ThreadLocalVariable{T}"/> values, and providing the
 	/// <see cref="ThreadStarting"/> event, which blocks the parent thread but
 	/// is called in the child thread. This only works if you use <see cref="ThreadEx"/>
 	/// to start the child thread; when using other mechanisms such as
@@ -46,12 +38,12 @@ namespace Loyc.Threading
 	///	});
 	///	task.Wait();
 	/// </code>
-	/// Be careful, however: you should guarantee that, while you copy the 
-	/// variables, the parent thread is blocked, or that the parent thread will not 
+	/// Be careful, however: you should guarantee that, while you copy the
+	/// variables, the parent thread is blocked, or that the parent thread will not
 	/// modify any of them (which may be difficult since variables might exist that
 	/// you are unaware of, that you do not control).
 	/// <para/>
-	/// TLV (thread-local variable) inheritance is needed to use the 
+	/// TLV (thread-local variable) inheritance is needed to use the
 	/// <a href="http://www.codeproject.com/Articles/101411/DI-and-Pervasive-services">
 	/// Ambient Service Pattern</a>
 	/// </remarks>
@@ -77,7 +69,7 @@ namespace Loyc.Threading
 
 		/// <summary>
 		/// This event is called when a thread is stopping, if the thread is stopping
-		/// gracefully and provided that it was started by the Start() method of this 
+		/// gracefully and provided that it was started by the Start() method of this
 		/// class (rather than Thread.Start()).
 		/// </summary>
 		public static event EventHandler<ThreadStartEventArgs> ThreadStopping;
@@ -86,10 +78,6 @@ namespace Loyc.Threading
 			{ _thread = new Thread(ThreadStart); _ts2 = start; }
 		public ThreadEx(ThreadStart start)
 			{ _thread = new Thread(ThreadStart); _ts1 = start; }
-		public ThreadEx(ParameterizedThreadStart start, int maxStackSize)
-			{ _thread = new Thread(ThreadStart, maxStackSize); _ts2 = start; }
-		public ThreadEx(ThreadStart start, int maxStackSize)
-			{ _thread = new Thread(ThreadStart, maxStackSize); _ts1 = start; }		
 
 		/// <summary>
 		/// Causes the operating system to change the state of the current instance to
@@ -115,7 +103,7 @@ namespace Loyc.Threading
 			// (In case this is Compact Framework, can't use ParameterizedThreadStart)
 			_startParameter = parameter;
 			_thread.Start();
-				
+
 			while(_startState == 1)
 				Thread.Sleep(0);
 		}
@@ -188,7 +176,7 @@ namespace Loyc.Threading
 		/// from the parent thread. Returns an object for uninitializing the thread.
 		/// </summary>
 		/// <param name="parentThreadId">Id of parent thread. The .NET framework
-		/// does not make this information available so you must somehow pass this 
+		/// does not make this information available so you must somehow pass this
 		/// value manually from the parent thread to the child thread.</param>
 		/// <returns>An object to be disposed at the end of the thread. This method
 		/// can be called in a using statement so that this happens automatically:
@@ -197,13 +185,13 @@ namespace Loyc.Threading
 		/// be released to prevent a memory leak.
 		/// </returns>
 		/// <remarks>It is safe to call this method if the thread has already been
-		/// initialized. In that case, the thread will not be initialized a second 
+		/// initialized. In that case, the thread will not be initialized a second
 		/// time, and the returned value will do nothing when it is disposed.
 		/// <para/>
-		/// Be careful with this method: you should guarantee that, while you copy the 
-		/// variables, the parent thread is blocked, or that the parent thread will not 
-		/// modify any of them during the copying process (which may be difficult 
-		/// since variables might exist that you are unaware of, that you do not 
+		/// Be careful with this method: you should guarantee that, while you copy the
+		/// variables, the parent thread is blocked, or that the parent thread will not
+		/// modify any of them during the copying process (which may be difficult
+		/// since variables might exist that you are unaware of, that you do not
 		/// control).
 		/// </remarks>
 		public static ThreadDestructor PropagateVariables(int parentThreadId)
@@ -227,29 +215,12 @@ namespace Loyc.Threading
 		/// Gets or sets the name of the thread.
 		/// </summary>
 		public string Name { get { return _thread.Name; } set { _thread.Name = value; } }
-		/// <summary>
-		/// Gets or sets a value indicating the scheduling priority of a thread.
-		/// </summary>
-		public ThreadPriority Priority { get { return _thread.Priority; } set { _thread.Priority = value; } }
 		#if !CompactFramework
 		/// <summary>
 		/// Gets a value containing the states of the current thread.
 		/// </summary>
 		public System.Threading.ThreadState ThreadState { get { return _thread.ThreadState; } }
 		#endif
-		/// <summary>
-		/// Raises a System.Threading.ThreadAbortException in the thread on which it
-		/// is invoked, to begin the process of terminating the thread while also providing
-		/// exception information about the thread termination. Calling this method usually
-		/// terminates the thread.
-		/// </summary>
-		public void Abort(object stateInfo) { _thread.Abort(stateInfo); }
-		/// <inheritdoc cref="Abort()"/>
-		public void Abort() { _thread.Abort(); }
-		/// <summary>
-		/// Returns the current domain in which the current thread is running.
-		/// </summary>
-		public static AppDomain GetDomain() { return Thread.GetDomain(); }
 		/// <summary>
 		/// Returns a hash code for the current thread.
 		/// </summary>
@@ -260,12 +231,12 @@ namespace Loyc.Threading
 		/// </summary>
 		public void Join() { _thread.Join(); }
 		/// <summary>
-		/// Blocks the calling thread until a thread terminates or the specified time 
-		/// elapses, while continuing to perform standard COM and SendMessage pumping. 
+		/// Blocks the calling thread until a thread terminates or the specified time
+		/// elapses, while continuing to perform standard COM and SendMessage pumping.
 		/// </summary>
 		public bool Join(int milliseconds) { return _thread.Join(milliseconds); }
 		#if !CompactFramework
-		public bool Join(TimeSpan timeout) { return _thread.Join(timeout); }
+		public bool Join(TimeSpan timeout) { return _thread.Join((Int32)timeout.TotalMilliseconds); }
 		#endif
 		/// <summary>
 		/// Suspends the current thread for a specified time.
@@ -276,8 +247,8 @@ namespace Loyc.Threading
 		public Thread ParentThread { get { return _parent; } }
 
 		#if !CompactFramework
-		public bool IsAlive { 
-			get { 
+		public bool IsAlive {
+			get {
 				System.Threading.ThreadState t = ThreadState;
 				return t != System.Threading.ThreadState.Stopped &&
 				       t != System.Threading.ThreadState.Unstarted &&
@@ -302,36 +273,36 @@ namespace Loyc.Threading
 	/// <summary>Used by the <see cref="ThreadEx.ThreadStarting"/> and <see cref="ThreadEx.ThreadStopping"/> events.</summary>
 	public class ThreadStartEventArgs : EventArgs
 	{
-		public ThreadStartEventArgs(Thread parent, ThreadEx child) 
+		public ThreadStartEventArgs(Thread parent, ThreadEx child)
 			{ ParentThread = parent; ChildThread = child; }
 		public Thread ParentThread;
 		public ThreadEx ChildThread;
 	}
 
-	
+
 	/// <summary>
 	/// A fast, tiny 4-byte lock to support multiple readers or a single writer.
-	/// Designed for low-contention, high-performance scenarios where reading is 
+	/// Designed for low-contention, high-performance scenarios where reading is
 	/// common and writing is rare.
 	/// </summary>
 	/// <remarks>
 	/// Do not use the default constructor! Use TinyReaderWriterLock.New as the
 	/// initial value of the lock.
 	/// <para/>
-	/// Recursive locking is not supported: the same lock cannot be acquired twice 
-	/// for writing on the same thread, nor can a reader lock be acquired after 
-	/// the writer lock was acquired on the same thread. If you make either of 
+	/// Recursive locking is not supported: the same lock cannot be acquired twice
+	/// for writing on the same thread, nor can a reader lock be acquired after
+	/// the writer lock was acquired on the same thread. If you make either of
 	/// these mistakes, the lock will throw an NotSupportedException.
 	/// <para/>
 	/// You also cannot acquire a read lock followed recursively by a write lock,
-	/// either. Attempting to do so will self-deadlock the thread, bacause 
+	/// either. Attempting to do so will self-deadlock the thread, bacause
 	/// TinyReaderWriterLock does not track the identity of each reader and is not
 	/// aware that it is waiting for the current thread to finish reading.
 	/// <para/>
 	/// However, multiple reader locks can be acquired on the same thread, just as
 	/// multiple reader locks can be acquired by different threads.
 	/// <para/>
-	/// Make sure you call ExitRead() or ExitWrite() in a finally block! When 
+	/// Make sure you call ExitRead() or ExitWrite() in a finally block! When
 	/// compiled in debug mode, TinyReaderWriterLock will make sure you don't mix
 	/// up ExitRead() and ExitWrite().
 	/// <para/>
@@ -346,7 +317,7 @@ namespace Loyc.Threading
 		internal const int NoUser = int.MinValue;
 		internal const int MaxReader = NoUser + 65536;
 		internal int _user;
-		
+
 		/// <summary>Acquires the lock to protect read access to a shared resource.</summary>
 		public void EnterReadLock()
 		{
@@ -415,7 +386,7 @@ namespace Loyc.Threading
 		}
 	}
 
-	/// <summary>When used with ThreadEx, implementing this base class allows you to 
+	/// <summary>When used with ThreadEx, implementing this base class allows you to
 	/// be notified when a child thread is created or terminates.</summary>
 	public abstract class ThreadLocalVariableBase
 	{
@@ -423,7 +394,7 @@ namespace Loyc.Threading
 		internal abstract void Terminate(int threadId);
 	}
 
-	/// <summary>Provides access to a thread-local variable through a dictionary 
+	/// <summary>Provides access to a thread-local variable through a dictionary
 	/// that maps thread IDs to values.</summary>
 	/// <typeparam name="T">Type of variable to wrap</typeparam>
 	/// <remarks>
@@ -431,36 +402,36 @@ namespace Loyc.Threading
 	/// <see cref="ThreadLocal{T}"/>, this class supports propagation from parent
 	/// to child threads when used with <see cref="ThreadEx"/>.
 	/// <para/>
-	/// This class exists to solve two problems. First, the [ThreadStatic] 
+	/// This class exists to solve two problems. First, the [ThreadStatic]
 	/// attribute is not supported in the .NET Compact Framework. Second, and
-	/// more importantly, .NET does not propagate thread-local variables when 
+	/// more importantly, .NET does not propagate thread-local variables when
 	/// creating new threads, which is a huge problem if you want to implement
 	/// the <a href="http://loyc-etc.blogspot.com/2010/08/pervasive-services-and-di.html">
 	/// Ambient Service Pattern</a>. This class copies the T value from a parent
 	/// thread to a child thread, but because .NET provides no way to hook into
-	/// thread creation, it only works if you use <see cref="ThreadEx"/> instead 
+	/// thread creation, it only works if you use <see cref="ThreadEx"/> instead
 	/// of standard threads.
 	/// <para/>
-	/// ThreadLocalVariable implements thread-local variables using a dictionary 
+	/// ThreadLocalVariable implements thread-local variables using a dictionary
 	/// that maps thread IDs to values.
 	/// <para/>
 	/// Variables of this type are typically static and they must NOT be marked
 	/// with the [ThreadStatic] attribute.
 	/// <para/>
 	/// ThreadLocalVariable(of T) is less convenient than the [ThreadStatic]
-	/// attribute, but ThreadLocalVariable works with ThreadEx to propagate the 
+	/// attribute, but ThreadLocalVariable works with ThreadEx to propagate the
 	/// value of the variable from parent threads to child threads, and you can
-	/// install a propagator function to customize the way the variable is 
+	/// install a propagator function to customize the way the variable is
 	/// copied (e.g. in case you need a deep copy).
 	/// <para/>
-	/// Despite my optimizations, ThreadLocalVariable is just over half as fast 
-	/// as a ThreadStatic variable in CLR 2.0, in a test with no thread 
-	/// contention. Access to the dictionary accounts for almost half of the 
-	/// execution time; try-finally (needed in case of asyncronous exceptions) 
-	/// blocks use up 11%; calling Thread.CurrentThread.ManagedThreadId takes 
+	/// Despite my optimizations, ThreadLocalVariable is just over half as fast
+	/// as a ThreadStatic variable in CLR 2.0, in a test with no thread
+	/// contention. Access to the dictionary accounts for almost half of the
+	/// execution time; try-finally (needed in case of asyncronous exceptions)
+	/// blocks use up 11%; calling Thread.CurrentThread.ManagedThreadId takes
 	/// about 9%; and the rest, I presume, is used up by the TinyReaderWriterLock.
 	/// <para/>
-	/// TODO: consider switching from TinyReaderWriterLock+Dictionary to 
+	/// TODO: consider switching from TinyReaderWriterLock+Dictionary to
 	/// ConcurrentDictionary which has fine-grained locking (.NET 4 only).
 	/// </remarks>
 	public class ThreadLocalVariable<T> : ThreadLocalVariableBase
@@ -485,12 +456,12 @@ namespace Loyc.Threading
 			: this(initialValue, initialValue, null) {}
 
 		/// <summary>Constructs a ThreadLocalVariable.</summary>
-		/// <param name="initialValue">Initial value on the current thread. 
+		/// <param name="initialValue">Initial value on the current thread.
 		/// Does not affect other threads that are already running.</param>
-		/// <param name="fallbackValue">Value to use when a given thread 
+		/// <param name="fallbackValue">Value to use when a given thread
 		/// doesn't have an associated value.</param>
-		/// <param name="propagator">A function that copies (and possibly 
-		/// modifies) the Value from a parent thread when starting a new 
+		/// <param name="propagator">A function that copies (and possibly
+		/// modifies) the Value from a parent thread when starting a new
 		/// thread.</param>
 		public ThreadLocalVariable(T initialValue, T fallbackValue, Func<T, T> propagator)
 		{
@@ -523,9 +494,9 @@ namespace Loyc.Threading
 			}
 		}
 
-		internal int CurrentThreadId 
+		internal int CurrentThreadId
 		{
-			get { return Thread.CurrentThread.ManagedThreadId; } 
+			get { return Thread.CurrentThread.ManagedThreadId; }
 		}
 
 		public bool HasValue
@@ -544,12 +515,12 @@ namespace Loyc.Threading
 		/// <remarks>
 		/// This property returns FallbackValue if no value exists for this thread.
 		/// </remarks>
-		public T Value { 
+		public T Value {
 			get {
 				_lock.EnterReadLock();
 				T value;
-				// Wrapping in a try-finally hurts performance by about 11% in a 
-				// Release build. Even though TryGetValue doesn't throw, an 
+				// Wrapping in a try-finally hurts performance by about 11% in a
+				// Release build. Even though TryGetValue doesn't throw, an
 				// asynchronous thread abort is theoretically possible :(
 				try {
 					if (!_tls.TryGetValue(CurrentThreadId, out value))
@@ -572,12 +543,12 @@ namespace Loyc.Threading
 
 		/// <summary>
 		/// When a thread is not created using ThreadEx, the value of your
-		/// ThreadLocalVariable fails to propagate from the parent thread to the 
+		/// ThreadLocalVariable fails to propagate from the parent thread to the
 		/// child thread. In that case, Value takes on the value of FallbackValue
 		/// the first time it is called.
 		/// </summary>
 		/// <remarks>
-		/// By default, the FallbackValue is the initialValue passed to the 
+		/// By default, the FallbackValue is the initialValue passed to the
 		/// constructor.
 		/// </remarks>
 		public T FallbackValue
@@ -605,46 +576,46 @@ namespace Loyc.Threading
 	/// assigned it.</summary>
 	/// <remarks>
 	/// ScratchBuffer is typically used as a static variable to hold a temporary
-	/// object used for operations that are done frequently and require a 
+	/// object used for operations that are done frequently and require a
 	/// temporary memory space--but only during the operation, not afterward.
 	/// <para/>
 	/// For example, CPTrie may require a temporary byte array during searches.
 	/// Re-creating the byte array for every search might cause a too much time
-	/// to be spent garbage-collecting. On the other hand, if CPTrie keeps a 
-	/// reference to the temporary buffer in itself, what if a program contains 
+	/// to be spent garbage-collecting. On the other hand, if CPTrie keeps a
+	/// reference to the temporary buffer in itself, what if a program contains
 	/// many instances of CPTrie? Each one would have its own separate temporary
 	/// buffer, wasting memory. The buffer can't be a straightforward global
 	/// variable, either, in case two threads need a scratch buffer at once.
-	/// ScratchBuffer, then, exists to prevent two threads from using the same 
+	/// ScratchBuffer, then, exists to prevent two threads from using the same
 	/// buffer.
 	/// <para/>
 	/// ScratchBuffer is designed with the assumption that creating a scratch
-	/// buffer is fast, but re-using an existing buffer is faster. Since 
-	/// creating a scratch buffer is cheap already, this class is worthless 
-	/// unless it is even cheaper. Therefore, it does not hold a buffer for 
-	/// each thread, since managing multiple buffers would be too expensive; 
+	/// buffer is fast, but re-using an existing buffer is faster. Since
+	/// creating a scratch buffer is cheap already, this class is worthless
+	/// unless it is even cheaper. Therefore, it does not hold a buffer for
+	/// each thread, since managing multiple buffers would be too expensive;
 	/// and volatile variable access is used instead of locking.
 	/// <para/>
-	/// ScratchBuffer originally returned null if the scratch buffer had not 
+	/// ScratchBuffer originally returned null if the scratch buffer had not
 	/// been initialized or was associated with a different thread, requiring
-	/// the caller to create a new buffer manually. Now there is a new constructor 
+	/// the caller to create a new buffer manually. Now there is a new constructor
 	/// that takes a factory function, which is called automatically by the Value
 	/// property if the scratch buffer is null or belongs to another thread. If
-	/// you use this constructor, then you do longer have to worry about Value 
+	/// you use this constructor, then you do longer have to worry about Value
 	/// returning null.
 	/// <example>
-	/// static ScratchBuffer&lt;byte[]&gt; _buf = 
+	/// static ScratchBuffer&lt;byte[]&gt; _buf =
 	///    new ScratchBuffer&lt;byte[]&gt;(() => new byte[40]);
 	///
 	/// // A method called a million times that needs a scratch buffer each time
 	/// void FrequentOperation()
 	/// {
 	///		byte[] buf = _buf.Value;
-	///     
+	///
 	///     // do something here involving the buffer ...
 	/// }
 	/// </example>
-	/// Arguably it is better to use a [ThreadStatic] variable is instead of 
+	/// Arguably it is better to use a [ThreadStatic] variable is instead of
 	/// ScratchBuffer, but FWIW [ThreadStatic] is not available on the .NET
 	/// Compact Framework.
 	/// </remarks>
@@ -673,7 +644,7 @@ namespace Loyc.Threading
 		}
 		private T CallFactory()
 		{
-			// By putting this code (which I hope is called infrequently) in a 
+			// By putting this code (which I hope is called infrequently) in a
 			// separate method, I hope that the hot path (Value) will be inlined
 			if (_factory == null)
 				return null;

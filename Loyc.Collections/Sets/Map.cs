@@ -7,29 +7,28 @@ using System.Diagnostics;
 
 namespace Loyc.Collections
 {
-	/// <summary>Common base class that contains code shared between 
+	/// <summary>Common base class that contains code shared between
 	/// <see cref="Map{K,V}"/> and <see cref="MMap{K,V}"/>.</summary>
-	/// <remarks>You might notice that although <see cref="Map{K,V}"/> and 
+	/// <remarks>You might notice that although <see cref="Map{K,V}"/> and
 	/// <see cref="MMap{K,V}"/> have a common base class, <see cref="Set{T}"/> and
-	/// <see cref="MSet{T}"/> do not, and this is a mere implementation detail. 
-	/// Since <see cref="Set{T}"/> is immutable, and small, and its fields can 
-	/// safely be initialized to 0 or null, its default value is a valid set and 
-	/// it makes sense to implement is as a struct. The same observation would 
+	/// <see cref="MSet{T}"/> do not, and this is a mere implementation detail.
+	/// Since <see cref="Set{T}"/> is immutable, and small, and its fields can
+	/// safely be initialized to 0 or null, its default value is a valid set and
+	/// it makes sense to implement is as a struct. The same observation would
 	/// apply to <see cref="Map{K,V}"/> except for one problem: the comparer. The
 	/// user can supply a comparer of type <c>IEqualityComparer&lt;K></c>, but
-	/// but <see cref="Map{K,V}"/> contains a set of type 
-	/// <c>InternalSet&lt;KeyValuePair&lt;K,V>></c>, which requires a comparer of 
-	/// type <c>IEqualityComparer&lt;KeyValuePair&lt;K,V>></c>. In general, a 
+	/// but <see cref="Map{K,V}"/> contains a set of type
+	/// <c>InternalSet&lt;KeyValuePair&lt;K,V>></c>, which requires a comparer of
+	/// type <c>IEqualityComparer&lt;KeyValuePair&lt;K,V>></c>. In general, a
 	/// wrapper object is necessary to provide this comparer, and I decided to use
-	/// the set itself as the wrapper object. Therefore, <see cref="Map{K,V}"/> 
+	/// the set itself as the wrapper object. Therefore, <see cref="Map{K,V}"/>
 	/// implements this interface, and it must be a class so that it is not boxed
 	/// every time it is converted to this interface.
 	/// <para/>
-	/// Finally, since <see cref="Map{K,V}"/> and <see cref="MMap{K,V}"/> are both 
-	/// classes and share some of the same code, I decided to factor out the 
+	/// Finally, since <see cref="Map{K,V}"/> and <see cref="MMap{K,V}"/> are both
+	/// classes and share some of the same code, I decided to factor out the
 	/// common code into this base class. The end.
 	/// </remarks>
-	[Serializable]
 	[DebuggerTypeProxy(typeof(DictionaryDebugView<,>))]
 	[DebuggerDisplay("Count = {Count}")]
 	public class MapOrMMap<K, V> : IReadOnlyCollection<KeyValuePair<K, V>>, IEqualityComparer<KeyValuePair<K, V>>, IReadOnlyDictionary<K, V>
@@ -39,8 +38,8 @@ namespace Loyc.Collections
 		internal IEqualityComparer<K> _keyComparer;
 		internal IEqualityComparer<KeyValuePair<K, V>> Comparer { get { return this; } }
 		// I wonder if this should use IntPtr, given that it'll probably be padded
-		// to 8 bytes on x64 anyway? Nah, probably the C# compiler would make it 
-		// slow, and InternalSet wasn't designed for collections larger than 2 
+		// to 8 bytes on x64 anyway? Nah, probably the C# compiler would make it
+		// slow, and InternalSet wasn't designed for collections larger than 2
 		// billion even if technically it can handle them.
 		internal int _count;
 		protected static readonly EqualityComparer<V> DefaultValueComparer = EqualityComparer<V>.Default;
@@ -69,10 +68,10 @@ namespace Loyc.Collections
 
 		/// <summary>Not intended to be called by users.</summary>
 		/// <remarks>
-		/// The user can provide a <see cref="IEqualityComparer{K}"/> to compare keys. 
-		/// However, InternalSet&lt;KeyValuePair&lt;K, V>> requires a comparer that 
-		/// can compare <see cref="KeyValuePair{K,V}"/> values. Therefore, MapOrMMap 
-		/// implements IEqualityComparer&lt;KeyValuePair&lt;K, V>> to provide the 
+		/// The user can provide a <see cref="IEqualityComparer{K}"/> to compare keys.
+		/// However, InternalSet&lt;KeyValuePair&lt;K, V>> requires a comparer that
+		/// can compare <see cref="KeyValuePair{K,V}"/> values. Therefore, MapOrMMap
+		/// implements IEqualityComparer&lt;KeyValuePair&lt;K, V>> to provide the
 		/// necessary comparer without an unnecessary memory allocation.
 		/// </remarks>
 		bool IEqualityComparer<KeyValuePair<K, V>>.Equals(KeyValuePair<K, V> x, KeyValuePair<K, V> y)
@@ -112,7 +111,7 @@ namespace Loyc.Collections
 		/// or returns <c>defaultValue</c> if the key is not found.</summary>
 		public V this[K key, V defaultValue]
 		{
-			get { 
+			get {
 				var kvp = new KeyValuePair<K, V>(key, defaultValue);
 				_set.Find(ref kvp, Comparer);
 				return kvp.Value;
@@ -150,7 +149,7 @@ namespace Loyc.Collections
 			return this[key, defaultValue];
 		}
 
-		/// <summary>Measures the total size of all objects allocated to this 
+		/// <summary>Measures the total size of all objects allocated to this
 		/// collection, in bytes, including the size of this object itself; see
 		/// <see cref="InternalSet{T}.CountMemory"/>.</summary>
 		public virtual long CountMemory(int sizeOfPair)
@@ -173,19 +172,19 @@ namespace Loyc.Collections
 	/// An immutable dictionary.
 	/// </summary>
 	/// <remarks>
-	/// This class is a read-only dictionary, known in comp-sci nerd speak as a 
+	/// This class is a read-only dictionary, known in comp-sci nerd speak as a
 	/// "persistent" data structure (not to be confused with the normal meaning
 	/// of "persistent" as something that is saved to disk--this data structure
-	/// is designed only to exist in memory). <c>Map</c> allows modification only 
-	/// by creating new dictionaries. To create new dictionaries, this class 
+	/// is designed only to exist in memory). <c>Map</c> allows modification only
+	/// by creating new dictionaries. To create new dictionaries, this class
 	/// provides the following methods:
 	/// <ul>
-	/// <li><see cref="Union"/>, <see cref="Intersect"/>, <see cref="Except"/> 
-	/// and <see cref="Xor"/> combine two dictionaries to create a new 
+	/// <li><see cref="Union"/>, <see cref="Intersect"/>, <see cref="Except"/>
+	/// and <see cref="Xor"/> combine two dictionaries to create a new
 	/// dictionary, without modifying either of the original dictionaries.</li>
-	/// <li><see cref="With"/> and <see cref="Without"/> create a new 
+	/// <li><see cref="With"/> and <see cref="Without"/> create a new
 	/// dictionary with a single item added or removed.</li>
-	/// <li>A C# cast operator is provided to convert a Map into an 
+	/// <li>A C# cast operator is provided to convert a Map into an
 	/// <see cref="MMap{K,V}"/>.</li>
 	/// </ul>
 	/// See <see cref="MMap{K,V}"/> and <see cref="InternalSet{T}"/> for more
@@ -196,8 +195,8 @@ namespace Loyc.Collections
 		public static readonly Map<K, V> Empty = new Map<K, V>(InternalSet<K>.DefaultComparer);
 
 		/// <summary>Creates an empty map. Consider using <see cref="Empty"/> instead.</summary>
-		/// <remarks>This is marked <c>Obsolete</c> instead of <c>protected</c> so 
-		/// that this class is compatible with the generic constraint known in C# 
+		/// <remarks>This is marked <c>Obsolete</c> instead of <c>protected</c> so
+		/// that this class is compatible with the generic constraint known in C#
 		/// as <c>new()</c>.</remarks>
 		[Obsolete("It is recommended to use Map<K,V>.Empty instead, to avoid an unnecessary memory allocation.")]
 		public Map() : base() { }
@@ -261,9 +260,9 @@ namespace Loyc.Collections
 		#region Persistent map operations: With, Without, Union, Except, Intersect, Xor
 
 		/// <summary>Returns a copy of the current map with an additional key-value pair.</summary>
-		/// <param name="replaceIfPresent">If true, the existing key-value pair is replaced if present. 
+		/// <param name="replaceIfPresent">If true, the existing key-value pair is replaced if present.
 		/// Otherwise, the existing key-value pair is left unchanged.</param>
-		/// <returns>A map with the specified key. If the key was already present 
+		/// <returns>A map with the specified key. If the key was already present
 		/// and replaceIfPresent is false, the same set ('this') is returned.</returns>
 		public Map<K, V> With(K key, V value, bool replaceIfPresent = true)
 		{
@@ -298,11 +297,11 @@ namespace Loyc.Collections
 			return this;
 		}
 
-		/// <summary>Returns a copy of the current map with the specified items 
+		/// <summary>Returns a copy of the current map with the specified items
 		/// added; each item is added only if the key is not already present.</summary>
 		public Map<K,V> Union(MapOrMMap<K, V> other) { return Union(other, false); }
 		/// <summary>Returns a copy of the current map with the specified items added.</summary>
-		/// <param name="replaceWithValuesFromOther">When a key is present in both maps, 
+		/// <param name="replaceWithValuesFromOther">When a key is present in both maps,
 		/// the values from 'other' replace the values in the current map. If this is
 		/// false, the values in this map are not replaced.</param>
 		public Map<K, V> Union(MapOrMMap<K, V> other, bool replaceWithValuesFromOther)
@@ -312,7 +311,7 @@ namespace Loyc.Collections
 			int count2 = _count + set.UnionWith(other._set, Comparer, replaceWithValuesFromOther);
 			return new Map<K,V>(set, _keyComparer, count2);
 		}
-		/// <summary>Returns a copy of the current map with all keys removed from 
+		/// <summary>Returns a copy of the current map with all keys removed from
 		/// this map that are not present in the other map. The <see cref="Values"/>
 		/// in 'other' are ignored.</summary>
 		public Map<K,V> Intersect(MapOrMMap<K,V> other)
@@ -322,7 +321,7 @@ namespace Loyc.Collections
 			int count2 = _count - set.IntersectWith(other._set, other.Comparer);
 			return new Map<K,V>(set, _keyComparer, count2);
 		}
-		/// <summary>Returns a copy of the current map with all keys removed from 
+		/// <summary>Returns a copy of the current map with all keys removed from
 		/// this map that are present in the other map. The <see cref="Values"/>
 		/// in 'other' are ignored.</summary>
 		public Map<K,V> Except(MapOrMMap<K,V> other)
@@ -332,8 +331,8 @@ namespace Loyc.Collections
 			int count2 = _count - set.ExceptWith(other._set, Comparer);
 			return new Map<K,V>(set, _keyComparer, count2);
 		}
-		/// <summary>Duplicates the current map and then modifies it so that it 
-		/// contains only keys that are present either in the current map or in 
+		/// <summary>Duplicates the current map and then modifies it so that it
+		/// contains only keys that are present either in the current map or in
 		/// the specified other map, but not both.</summary>
 		public Map<K,V> Xor(MapOrMMap<K,V> other)
 		{

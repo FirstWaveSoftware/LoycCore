@@ -9,25 +9,24 @@ using System.Runtime.CompilerServices;
 namespace Loyc.Collections
 {
 	/// <summary>
-	/// A simple wrapper around AList that includes an <see cref="AListIndexer{K,T}"/> 
+	/// A simple wrapper around AList that includes an <see cref="AListIndexer{K,T}"/>
 	/// that can be used to find items relatively quickly in a large list. When an
-	/// index is built and the list is large, it accelerates IndexOf(item), 
+	/// index is built and the list is large, it accelerates IndexOf(item),
 	/// Contains(item) and Remove(item).
 	/// </summary>
 	/// <remarks>
 	/// The <see cref="IndexOf"/>, <see cref="AListBase{T}.Remove"/> and <see cref="AListBase{T}.Contains"/>
 	/// methods are accelerated by the indexer, but please note that the indexer
-	/// is expensive in terms of memory usage and CPU time. In total, once the 
+	/// is expensive in terms of memory usage and CPU time. In total, once the
 	/// index has been built, IndexedAList typically uses about three times as
-	/// much memory as a plain <see cref="AList{T}"/>. Moreover, changing the list 
-	/// takes at least twice as much time, since the indexer must be updated to 
+	/// much memory as a plain <see cref="AList{T}"/>. Moreover, changing the list
+	/// takes at least twice as much time, since the indexer must be updated to
 	/// reflect every change.
 	/// <para/>
-	/// An IndexedAList is indexed by default, but if necessary the index can be 
-	/// disabled in the constructor or by settings the <see cref="IsIndexed"/> 
+	/// An IndexedAList is indexed by default, but if necessary the index can be
+	/// disabled in the constructor or by settings the <see cref="IsIndexed"/>
 	/// property to false.
 	/// </remarks>
-	[Serializable]
 	public class IndexedAList<T> : AList<T>
 	{
 		public IndexedAList() : this(true) { }
@@ -38,7 +37,7 @@ namespace Loyc.Collections
 		public IndexedAList(int maxLeafSize, int maxInnerSize) : base(maxLeafSize, maxInnerSize) { CreateIndex(); }
 		public IndexedAList(int maxLeafSize, int maxInnerSize, bool createIndexNow) { if (createIndexNow) CreateIndex(); }
 		public IndexedAList(AList<T> items, bool keepListChangingHandlers) : this(items, keepListChangingHandlers, true) { }
-		public IndexedAList(AList<T> items, bool keepListChangingHandlers, bool createIndexNow) : base(items, keepListChangingHandlers) 
+		public IndexedAList(AList<T> items, bool keepListChangingHandlers, bool createIndexNow) : base(items, keepListChangingHandlers)
 		{
 			if (createIndexNow)
 				CreateIndex();
@@ -55,11 +54,11 @@ namespace Loyc.Collections
 
 		/// <summary>Finds an index of an item in the list.</summary>
 		/// <param name="item">An item for which to search.</param>
-		/// <returns>An index of the item. If the list contains duplicates of the 
-		/// item, this method does not necessarily return the lowest index of the 
+		/// <returns>An index of the item. If the list contains duplicates of the
+		/// item, this method does not necessarily return the lowest index of the
 		/// item.</returns>
 		/// <remarks>
-		/// If IsIndexed is false, an index is created unless the list is short 
+		/// If IsIndexed is false, an index is created unless the list is short
 		/// (specifically, an index is created if the root node is not a leaf.)
 		/// </remarks>
 		public override int IndexOf(T item)
@@ -91,9 +90,9 @@ namespace Loyc.Collections
 
 		/// <summary>Indicates whether the AList is indexed.</summary>
 		/// <remarks>
-		/// You can set this property to false to discard the index if it has been 
+		/// You can set this property to false to discard the index if it has been
 		/// built, or set it to true to create a new index if it has not yet been
-		/// built (which takes O(N log N) where N is the <see cref="AListBase{K,T}.Count"/> 
+		/// built (which takes O(N log N) where N is the <see cref="AListBase{K,T}.Count"/>
 		/// of this list).
 		/// </remarks>
 		public bool IsIndexed

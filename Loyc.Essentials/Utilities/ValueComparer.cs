@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Reflection;
 
 namespace Loyc
 {
@@ -16,9 +16,9 @@ namespace Loyc
 	/// If T is a reference type, it compares the two references using
 	/// ReferenceComparer. If T is a struct then this class does not currently
 	/// perform a bitwise comparison, as it just uses EqualityComparer(T).Default.
-	/// In the future somebody should write a fast "unsafe" bitwise comparer for 
-	/// value types that do not implement IEquatable, because the default 
-	/// implementation of Equals is documented to use reflection, so we can expect 
+	/// In the future somebody should write a fast "unsafe" bitwise comparer for
+	/// value types that do not implement IEquatable, because the default
+	/// implementation of Equals is documented to use reflection, so we can expect
 	/// that it is extremely slow.
 	/// </remarks>
 	public static class ValueComparer<T>
@@ -32,7 +32,7 @@ namespace Loyc
 
 		private static EqualityComparer<T> GetComparer()
 		{
-			if (typeof(T).IsValueType)
+			if (typeof(T).GetTypeInfo().IsValueType)
 				return EqualityComparer<T>.Default;
 			else {
 				// return new ReferenceComparer<T>()

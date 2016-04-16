@@ -8,7 +8,7 @@
 	using System.Runtime.CompilerServices;
 
 	/// <summary>
-	/// A compact auto-enlarging list that efficiently supports supports insertions 
+	/// A compact auto-enlarging list that efficiently supports supports insertions
 	/// at the beginning or end of the list.
 	/// </summary><remarks>
 	/// An <a href="http://core.loyc.net/collections/dlist.html">article</a>
@@ -16,7 +16,6 @@
 	/// </remarks>
 	/// <seealso cref="InternalDList{T}"/>
 	/// <seealso cref="DList"/>
-	[Serializable()]
 	#if !CompactFramework
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	#endif
@@ -67,7 +66,7 @@
 		{
 			_dlist.PushLast(item);
 		}
-		
+
 		public void PushFirst(T item)
 		{
 			_dlist.PushFirst(item);
@@ -144,7 +143,7 @@
 			foreach (T item in e)
 				Add(item);
 		}
-		
+
 		void CheckInsertIndex(int index)
 		{
 			if ((uint)index > (uint)_dlist.Count)
@@ -205,7 +204,7 @@
 		#endif
 		private void CheckIndex(int index)
 		{
-			if ((uint)index >= (uint)_dlist.Count) 
+			if ((uint)index >= (uint)_dlist.Count)
 				ThrowOutOfRange(index);
 		}
 		private void ThrowOutOfRange(int index)
@@ -332,7 +331,7 @@
 		{
 			return _dlist.BinarySearch(k, comp);
 		}
-		
+
 		public void Resize(int newSize)
 		{
 			if (newSize < Count)
@@ -354,7 +353,7 @@
 				throw new ArgumentOutOfRangeException("sourceIndex");
 			if ((uint)subcount > (uint)Math.Max(_dlist.Count - sourceIndex, destination.Length - destinationIndex))
 				throw new ArgumentOutOfRangeException("subcount");
-			
+
 			_dlist.CopyTo(sourceIndex, destination, destinationIndex, subcount);
 		}
 
@@ -364,7 +363,7 @@
 				throw new ArgumentOutOfRangeException("start");
 			if (subcount < 0)
 				throw new ArgumentOutOfRangeException("subcount");
-			
+
 			return new DList<T>(_dlist.CopySection(start, subcount));
 		}
 
@@ -388,10 +387,9 @@
 	}
 
 	/// <summary>
-	/// This class is the same as <c>DList{object}</c> except that it 
+	/// This class is the same as <c>DList{object}</c> except that it
 	/// also implements the IList interface.
 	/// </summary>
-	[Serializable()]
 	public class DList : DList<object>, System.Collections.IList
 	{
 		public bool IsFixedSize
@@ -404,7 +402,7 @@
 				throw new ArgumentOutOfRangeException("array");
 			if (arrayIndex < 0 || array.Length - arrayIndex < Count)
 				throw new ArgumentOutOfRangeException("arrayIndex");
-			
+
 			foreach(object obj in this)
 				array.SetValue(obj, arrayIndex++);
 		}

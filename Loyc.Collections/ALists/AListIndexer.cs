@@ -18,41 +18,40 @@ namespace Loyc.Collections.Impl
 	/// performance benefit to small lists; to the contrary, it just wastes time
 	/// and memory in small lists.
 	/// <para/>
-	/// It is recommended to use IndexedAList instead of instantiating this class 
+	/// It is recommended to use IndexedAList instead of instantiating this class
 	/// directly.
 	/// <para/>
 	/// In general, AListIndexer requires more memory than the list that is being
 	/// indexed. Specifically, if pointers use P bytes, then AListIndexer itself
-	/// consumes moderately MORE than X+P*N bytes of memory, where X is the size 
+	/// consumes moderately MORE than X+P*N bytes of memory, where X is the size
 	/// of the list being indexed, and N is the number of items in the list. Thus,
-	/// for example, an indexed list of <see cref="AList{Object}"/> requires 
+	/// for example, an indexed list of <see cref="AList{Object}"/> requires
 	/// approximately three times as much memory as an AList that is not indexed.
 	/// <para/>
-	/// Moreover, changing an indexed list takes at least twice as much time, since 
+	/// Moreover, changing an indexed list takes at least twice as much time, since
 	/// the indexer must be notified of each change and updates to the index take
-	/// O(log N) time per update. Batch operations involving X items that take 
-	/// O(log N) time without an indexer (e.g. RemoveRange(i, X)) will take 
-	/// O(X log N) time instead, because the indexer must be notified about each 
+	/// O(log N) time per update. Batch operations involving X items that take
+	/// O(log N) time without an indexer (e.g. RemoveRange(i, X)) will take
+	/// O(X log N) time instead, because the indexer must be notified about each
 	/// item changed.
 	/// <para/>
 	/// Still, these costs are worthwhile in applications that frequently search
 	/// for items in the list.
 	/// </remarks>
-	[Serializable]
 	public class AListIndexer<K, T> : IAListTreeObserver<K, T>
 	{
 		BMultiMap<T, AListLeaf<K, T>> _items;
 		BMultiMap<AListNode<K,T>, AListInnerBase<K, T>> _nodes;
 		AListNode<K, T> _root;
 
-		// This is not a valid comparison function for a normal dictionary, 
+		// This is not a valid comparison function for a normal dictionary,
 		// because two unrelated objects can have the same hashcode. However,
 		// we have no other way to construct an ordering function for an
 		// arbitrary item type "T" and for AListNodes. Using the hashcodes
-		// will work OK, provided that we 
+		// will work OK, provided that we
 		// (1) store the objects in a collection that allows duplicates
 		//     (i.e. BMultiMap), and
-		// (2) are careful to handle the situation where we search for one 
+		// (2) are careful to handle the situation where we search for one
 		//     object and find an unrelated object instead (or in addition).
 		static int CompareHashCodes<X>(X a, X b)
 		{
@@ -77,7 +76,7 @@ namespace Loyc.Collections.Impl
 		{
 			BadState("AListIndexer is inconsistent with the list it is attached to.");
 		}
-		void BadState(string msg) 
+		void BadState(string msg)
 		{
 			throw new InvalidStateException(msg);
 		}
@@ -101,7 +100,7 @@ namespace Loyc.Collections.Impl
 			}
 			_root = newRoot;
 		}
-		
+
 		public void ItemAdded(T item, AListLeaf<K, T> parent)
 		{
 			_items.Add(new KeyValuePair<T,AListLeaf<K,T>>(item, parent));
@@ -162,16 +161,16 @@ namespace Loyc.Collections.Impl
 
 		/// <summary>Returns an index at which the specified item can be found.</summary>
 		/// <param name="item">Item to find.</param>
-		/// <returns>The index of the item in the list being indexed by this 
+		/// <returns>The index of the item in the list being indexed by this
 		/// object, or -1 if the item does not exist in the list.</returns>
 		/// <remarks>
-		/// The search takes O(M log^2 N) time, where N is the size of the list 
+		/// The search takes O(M log^2 N) time, where N is the size of the list
 		/// and M is the maximum size of nodes in the list. Due to the "M" factor,
-		/// A-lists with large nodes are searched more slowly than A-lists with 
+		/// A-lists with large nodes are searched more slowly than A-lists with
 		/// small nodes; however, the "log N" part is a base-M logarithm, so you
 		/// don't actually gain performance by using very small nodes. This is
-		/// because very small nodes require deeply nested trees, and deep trees 
-		/// are slow. The <see cref="AListBase{K,T}"/> documentation discusses 
+		/// because very small nodes require deeply nested trees, and deep trees
+		/// are slow. The <see cref="AListBase{K,T}"/> documentation discusses
 		/// the effect of node size further.
 		/// </remarks>
 		public int IndexOfAny(T item)
@@ -212,8 +211,8 @@ namespace Loyc.Collections.Impl
 			return list;
 		}
 
-		/// <summary>Given an item and a leaf that is known to contain a copy of 
-		/// the item, this method returns the index of the item in the tree as 
+		/// <summary>Given an item and a leaf that is known to contain a copy of
+		/// the item, this method returns the index of the item in the tree as
 		/// a whole. Requires O(M )</summary>
 		protected int ReconstructIndex(T item, AListLeaf<K, T> leaf)
 		{
@@ -241,20 +240,20 @@ namespace Loyc.Collections.Impl
 			return index;
 		}
 
-		/// <summary>Scans the index to verify that it matches the tree that is 
-		/// being indexed. The scan takes O(N log N + N M) time for a list of 
+		/// <summary>Scans the index to verify that it matches the tree that is
+		/// being indexed. The scan takes O(N log N + N M) time for a list of
 		/// length N with maximum node size M.</summary>
 		/// <exception cref="InvalidStateException">
-		/// The index is out of sync with the tree. 
+		/// The index is out of sync with the tree.
 		/// <para/>
 		/// This could indicate a bug somewhere in the A-list code, but it could
 		/// also be caused by other rogue code, such as items that change their
 		/// sort order or hashcode after being added to the collection, an observer
-		/// that has thrown exceptions when it's not allowed to, or buggy 
+		/// that has thrown exceptions when it's not allowed to, or buggy
 		/// multithreading (modifying a list from two threads at once).
 		/// </exception>
 		/// <remarks>
-		/// Tree observability is a difficult feature to implement correctly, so 
+		/// Tree observability is a difficult feature to implement correctly, so
 		/// this method is called a lot in unit tests to help work out the bugs.
 		/// </remarks>
 		public void VerifyCorrectness()
@@ -272,7 +271,7 @@ namespace Loyc.Collections.Impl
 				if (leaf != _root && _nodes.IndexOfExact(leaf) <= -1)
 					AddError(ref e, "Leaf {0:X} has no known parent but is not the root.", leaf.GetHashCode() & 0xFFFF);
 			}
-			
+
 			if (_nodes == null) {
 				if (!_root.IsLeaf)
 					AddError(ref e, "AListIndexer is unaware that the AList is a tree");
@@ -298,7 +297,7 @@ namespace Loyc.Collections.Impl
 				if (totalChildren + _root.LocalCount != _items.Count + _nodes.Count)
 					AddError(ref e, "Computed count {0}+{1} != indexed count {2}+{3}.", totalChildren, _root.LocalCount, _items.Count, _nodes.Count);
 			}
-			
+
 			if (e != null)
 				BadState(e.ToString());
 		}
@@ -312,7 +311,7 @@ namespace Loyc.Collections.Impl
 					sb.Append(fmt);
 				else
 					sb.AppendFormat(fmt, args);
-				
+
 				if (sb.Length > 1000)
 				{
 					sb.Remove(1000, sb.Length - 1000);
@@ -329,8 +328,8 @@ namespace Loyc.Collections.Impl
 		public AListIndexerBase(AList<T> list, AListNode<T, T> root) : base(list, root, null) { }
 
 		/// <summary>
-		/// Used for sanity checks. Count should equal the number of items in the 
-		/// tree, unless the root node is a leaf, in which case this class can return 
+		/// Used for sanity checks. Count should equal the number of items in the
+		/// tree, unless the root node is a leaf, in which case this class can return
 		/// 0 and refuse to keep track of any items.
 		/// </summary>
 		public abstract uint Count { get; }
@@ -394,12 +393,12 @@ namespace Loyc.Collections.Impl
 
 		protected static void Verify(bool condition) { System.Diagnostics.Debug.Assert(condition); }
 
-		/// <summary>Builds an index, given a tree root and the number of items in 
+		/// <summary>Builds an index, given a tree root and the number of items in
 		/// the tree. Also sets <see cref="Root"/> to the given root node.</summary>
 		/// <remarks>
 		/// This must be the first method called after construction. It can be called
-		/// again later to rebuild the index, if the tree has been rearranged (e.g. 
-		/// sorted). The root is normally an inner node, because if the tree contains 
+		/// again later to rebuild the index, if the tree has been rearranged (e.g.
+		/// sorted). The root is normally an inner node, because if the tree contains
 		/// only a leaf node then this class offers no performance benefit and should
 		/// not be used.
 		/// </remarks>

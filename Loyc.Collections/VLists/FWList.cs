@@ -1,14 +1,14 @@
 ﻿/*
 	VList processing library: Copyright 2009 by David Piepgrass
 
-	This library is free software: you can redistribute it and/or modify it 
-	it under the terms of the GNU Lesser General Public License as published 
-	by the Free Software Foundation, either version 3 of the License, or (at 
+	This library is free software: you can redistribute it and/or modify it
+	it under the terms of the GNU Lesser General Public License as published
+	by the Free Software Foundation, either version 3 of the License, or (at
 	your option) any later version. It is provided without ANY warranties.
-	Please note that it is fairly complex. Therefore, it may contain bugs 
+	Please note that it is fairly complex. Therefore, it may contain bugs
 	despite my best efforts to test it.
 
-	If you did not receive a copy of the License with this library, you can 
+	If you did not receive a copy of the License with this library, you can
 	find it at http://www.gnu.org/licenses/
 */
 using System;
@@ -28,7 +28,7 @@ namespace Loyc.Collections
 	/// <remarks>See the remarks of <see cref="VListBlock{T}"/> for more information
 	/// about VLists and WLists. It is most efficient to add items to the front of
 	/// a FWList (at index 0) or the back of an WList (at index Count-1).</remarks>
-	public sealed class FWList<T> : WListBase<T>, IListAndListSource<T>, ICloneable<FWList<T>>, ICloneable
+	public sealed class FWList<T> : WListBase<T>, IListAndListSource<T>, ICloneable<FWList<T>>
 	{
 		protected override int AdjustWListIndex(int index, int size) { return index; }
 
@@ -52,13 +52,13 @@ namespace Loyc.Collections
 		{
 			AddRange(list);
 		}
-		
+
 		#endregion
-		
+
 		#region AddRange, InsertRange, RemoveRange
 
-		// Note: FWList doesn't offer AddRange(IEnumerable<T>) because it would 
-		// add the items in reverse order (the first item enumerated would have 
+		// Note: FWList doesn't offer AddRange(IEnumerable<T>) because it would
+		// add the items in reverse order (the first item enumerated would have
 		// the highest index). AddRange(IList<T>) adds list[list.Count-1] first.
 
 		public void AddRange(IList<T> list) { AddRangeBase(list, false); }
@@ -85,7 +85,7 @@ namespace Loyc.Collections
 		public new void Insert(int index, T item) { InsertAtDff(index, item); }
 		public new void RemoveAt(int index) { RemoveAtDff(index); }
 
-		/// <summary>Gets an item from the list at the specified index; returns 
+		/// <summary>Gets an item from the list at the specified index; returns
 		/// defaultValue if the index is not valid.</summary>
 		public T this[int index, T defaultValue]
 		{
@@ -119,8 +119,8 @@ namespace Loyc.Collections
 			fail = Block == null || !Block.FGet(index, LocalCount, ref value);
 			return value;
 		}
-		
-		#endregion 
+
+		#endregion
 
 		#region ICloneable Members
 
@@ -128,7 +128,6 @@ namespace Loyc.Collections
 			VListBlock<T>.EnsureImmutable(Block, LocalCount);
 			return new FWList<T>(Block, LocalCount, false);
 		}
-		object ICloneable.Clone() { return Clone(); }
 
 		#endregion
 
@@ -142,7 +141,7 @@ namespace Loyc.Collections
 		/// structure is not modified.</returns>
 		/// <remarks>
 		/// If the predicate keeps the first N items it is passed (which are the
-		/// last or "tail" items in a FWList), those N items are typically not 
+		/// last or "tail" items in a FWList), those N items are typically not
 		/// copied, but shared between the existing list and the new one.
 		/// </remarks>
 		public FWList<T> Where(Predicate<T> keep)
@@ -159,9 +158,9 @@ namespace Loyc.Collections
 		/// <returns>The list after filtering has been applied. The original list
 		/// structure is not modified.</returns>
 		/// <remarks>
-		/// This is a smart function. If the filter does not modify the first N 
-		/// items it is passed (which are the last items in a FWList), those N items 
-		/// are typically not copied, but shared between the existing list and the 
+		/// This is a smart function. If the filter does not modify the first N
+		/// items it is passed (which are the last items in a FWList), those N items
+		/// are typically not copied, but shared between the existing list and the
 		/// new one.
 		/// </remarks>
 		public FWList<T> WhereSelect(Func<T,Maybe<T>> filter)
@@ -174,13 +173,13 @@ namespace Loyc.Collections
 
 		/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
-		/// <returns>The list after the map function is applied to each item. The 
+		/// <returns>The list after the map function is applied to each item. The
 		/// original VList structure is not modified.</returns>
 		/// <remarks>
 		/// This method is called "Smart" because of what happens if the map
 		/// doesn't do anything. If the map function returns the first N items
-		/// unmodified (the items at the tail of the FWList), those N items are 
-		/// typically not copied, but shared between the existing list and the 
+		/// unmodified (the items at the tail of the FWList), those N items are
+		/// typically not copied, but shared between the existing list and the
 		/// new one.
 		/// </remarks>
 		public FWList<T> SmartSelect(Func<T, T> map)
@@ -193,7 +192,7 @@ namespace Loyc.Collections
 
 		/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
-		/// <returns>The list after the map function is applied to each item. The 
+		/// <returns>The list after the map function is applied to each item. The
 		/// original VList structure is not modified.</returns>
 		public FWList<Out> Select<Out>(Func<T, Out> map)
 		{
@@ -245,16 +244,16 @@ namespace Loyc.Collections
 			return VListBlock<T>.EnsureImmutable(Block, LocalCount - numToRemove);
 		}
 
-		/// <summary>Returns this list as an WList, which effectively reverses 
+		/// <summary>Returns this list as an WList, which effectively reverses
 		/// the order of the elements.</summary>
 		/// <remarks>This operation marks the items of the list as immutable.
-		/// You can modify either list afterward, but some or all of the list 
+		/// You can modify either list afterward, but some or all of the list
 		/// may have to be copied.</remarks>
 		public static explicit operator WList<T>(FWList<T> list) { return list.ToWList(); }
-		/// <summary>Returns this list as an WList, which effectively reverses 
+		/// <summary>Returns this list as an WList, which effectively reverses
 		/// the order of the elements.</summary>
 		/// <remarks>This operation marks the items of the list as immutable.
-		/// You can modify either list afterward, but some or all of the list 
+		/// You can modify either list afterward, but some or all of the list
 		/// may have to be copied.</remarks>
 		public WList<T> ToWList()
 		{
@@ -270,7 +269,7 @@ namespace Loyc.Collections
 
 		#endregion
 	}
-	
+
 	[TestFixture]
 	public class WListTests
 	{
@@ -283,7 +282,7 @@ namespace Loyc.Collections
 
 			FWList<int> list = new FWList<int>();
 			Assert.That(list.IsEmpty);
-			
+
 			// create VListBlockOfTwo
 			list = new FWList<int>(10, 20);
 			ExpectList(list, 10, 20);
@@ -300,7 +299,7 @@ namespace Loyc.Collections
 			ExpectList(list, 3, 2, 1);
 			FVList<int> snap = list.ToFVList();
 			ExpectList(snap, 3, 2, 1);
-			
+
 			// AddRange(), Push(), Pop()
 			list.Push(4);
 			list.AddRange(new int[] { 6, 5 });
@@ -319,7 +318,7 @@ namespace Loyc.Collections
 			list.AddRange(new int[] { 9, 8, 7, 6, 5, 4 });
 			list.AddRange(new int[] { 14, 13, 12, 11, 10 });
 			ExpectList(list, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
-			
+
 			// Remove(), enumerator
 			list.Remove(14);
 			list.Remove(13);
@@ -380,13 +379,13 @@ namespace Loyc.Collections
 			FWList<int> A = new FWList<int>();
 			A.AddRange(new int[] { 5, 6, 7 });
 			FWList<int> B = A.Clone();
-			
+
 			A.Push(4);
 			ExpectList(B, 5, 6, 7);
 			ExpectList(A, 4, 5, 6, 7);
 			B.Push(-4);
 			ExpectList(B, -4, 5, 6, 7);
-			
+
 			Assert.That(A.WithoutFirst(2) == B.WithoutFirst(2));
 		}
 
@@ -412,15 +411,15 @@ namespace Loyc.Collections
 			Assert.That(w.WithoutFirst(1) != v.WithoutFirst(1));
 
 			// Now for a more complicated case: create a long immutable chain by
-			// using a nasty access pattern, add a mutable block in front, then 
+			// using a nasty access pattern, add a mutable block in front, then
 			// make some of the immutable blocks mutable. This will cause several
-			// immutable blocks to be consolidated into one mutable block, 
+			// immutable blocks to be consolidated into one mutable block,
 			// shortening the chain.
 			v = new FVList<int>(6);
 			v = v.Add(-1).Tail.Add(5).Add(-1).Tail.Add(4).Add(-1).Tail.Add(3);
 			v = v.Add(-1).Tail.Add(2).Add(-1).Tail.Add(1).Add(-1).Tail.Add(0);
 			ExpectList(v, 0, 1, 2, 3, 4, 5, 6);
-			// At this point, every block in the chain has only one item (it's 
+			// At this point, every block in the chain has only one item (it's
 			// a linked list!) and the capacity of each block is 2.
 			Assert.AreEqual(7, v.BlockChainLength);
 
@@ -523,8 +522,8 @@ namespace Loyc.Collections
 		[Test]
 		public void TestFalseOwnership()
 		{
-			// This test tries to make sure a FWList doesn't get confused about what 
-			// blocks it owns. It's possible for a FWList to share a partially-mutable 
+			// This test tries to make sure a FWList doesn't get confused about what
+			// blocks it owns. It's possible for a FWList to share a partially-mutable
 			// block that contains mutable items with another FWList, but only one
 			// FWList owns the items.
 
@@ -537,15 +536,15 @@ namespace Loyc.Collections
 			// A,B--->|Imm_1|--->|Imm_1|
 			//        |____0|    |____0|
 			//
-			// (The location of "Imm" in each block denotes the highest immutable 
-			// item; this diagram shows there are two immutable items in each 
+			// (The location of "Imm" in each block denotes the highest immutable
+			// item; this diagram shows there are two immutable items in each
 			// block)
 			FWList<int> A = new FWList<int>(4);
 			for (int i = 0; i < 4; i++)
 				A[i] = i;
 			FWList<int> B = A.Clone();
-			
-			// B can't add to the second block because it's not the owner, so a 
+
+			// B can't add to the second block because it's not the owner, so a
 			// third block is created when we Add(1).
 			B.Add(1);
 			A.Add(-1);
@@ -561,7 +560,7 @@ namespace Loyc.Collections
 			//    owned by B
 			//      |____8|
 			//      |____7|
-			//      |____6|   
+			//      |____6|
 			//      |____5|         block 1
 			//      |____4|       owned by A
 			//      |____3|   A     |____3|     block 2
@@ -573,8 +572,8 @@ namespace Loyc.Collections
 			// Actually the previous test puts us in just this state.
 			//
 			// I can't think of a test that uses the public interface to detect bugs
-			// in this case. The most important thing is that B._block.PriorIsOwned 
-			// returns false. 
+			// in this case. The most important thing is that B._block.PriorIsOwned
+			// returns false.
 			Assert.That(B.IsOwner && !B.Block.PriorIsOwned);
 			Assert.That(A.IsOwner);
 			Assert.That(B.Block.Prior == A.WithoutFirst(1));
@@ -600,7 +599,7 @@ namespace Loyc.Collections
 					int range = list.Count + (action >= 2 ? 1 : 0);
 					if (range == 0) { iteration--; continue; }
 					index = r.Next(range);
-					
+
 					switch (action) {
 						case 0:
 							list.RemoveAt(index);

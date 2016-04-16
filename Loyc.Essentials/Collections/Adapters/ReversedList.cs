@@ -23,7 +23,6 @@ namespace Loyc.Collections
 	}
 
 	/// <summary>Adapter: a reversed of an <see cref="IList{T}"/>. TODO: unit tests.</summary>
-	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	public struct ReversedList<T> : IListEx<T>, IListRangeMethods<T>, IEquatable<ReversedList<T>>
 	{
